@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship, aliased
 from sqlalchemy.sql.expression import func
 from datetime import datetime
-
+import enum
 
 from database import Base
 
@@ -11,6 +11,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(120), nullable=False)
+    name = Column(String(100), nullable=False)
+    company_id = Column(Integer, ForeignKey('company.id'), nullable=True)
     login_id = Column(String(36), nullable=True)
     
     @property
@@ -23,19 +25,33 @@ class User(Base):
 
     def get_id(self):
         return self.login_id
-"""
-class Topic(Base):
-    __tablename__ = 'topic'
+
+class Board(Base):
+    __tablename__ = 'board'
     id = Column(Integer, primary_key=True)
-    name = Column(String(80), unique=True, nullable=False)
-    description =Column(String(1000), unique=True, nullable=False)
+    project_name = Column(String(80), unique=True, nullable=False)
+    description = Column(String(1000), nullable=True)
+    company_id = Column(Integer, ForeignKey('company.id'), nullable = False)
 
 
-class Post(Base):
-    __tablename__ = 'post'
+class Company(Base):
+    __tablename__ = 'company'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), unique=True, nullable=False)
+    address = Column(String(200), unique=True, nullable=False)
+
+class Task(Base):
+    __tablename__ = 'task'
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey('board.id'), nullable=False)
+    task_name = Column(String(1000), nullable=False)
+    description = Column(String(1000), nullable=True)
+    date_created = Column(DateTime, default=datetime.now)
+    state = Column(Enum('TO DO','PROGRESS','TESTING','DONE'))
+
+class Connections(Base):
+    __tablename__ = 'connections'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
-    content = Column(String(10000), nullable=False)
-    date_created = Column(DateTime, default=datetime.now)
-
+    project_id = Column(Integer, ForeignKey('board.id'), nullable=False)
+    task_id = Column(Integer, ForeignKey('task.id'), nullable=False)

@@ -9,7 +9,7 @@ from sqlalchemy import asc
 
 
 from database import db_session, init_db
-from models import User#, Topic, Post
+from models import User
 
 login_manager = LoginManager()
 
@@ -158,7 +158,4 @@ def profile():
 
 @app.route('/',methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        return redirect(url_for('create_topic'))
-    topics = Topic.query.order_by(asc(Topic.id)).all()
-    return render_template("index.html",topics = topics)
+    return render_template("index.html")

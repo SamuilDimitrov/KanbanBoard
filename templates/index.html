@@ -8,27 +8,9 @@ Home
 
 <div class="row justify-content-center mt-2">
     <div class="col-md-4">
-        {% if not topics %}
-        <h3>There are no topics here</h3>
-        {% else %}
-        <ul class="list-group">
-            {% for topic in topics %}
-            <li class="list-group-item">
-                <h4>
-                    <a href="/topic/{{topic.id}}">{{topic.name}}</a>
-                </h4>
-                <h6>
-                    {{topic.description}}
-                </h6>
-            </li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% if current_user.is_authenticated %}
-        <form method="POST">
-            <button type="submit" class="btn btn-primary btn-block btn-lg mt-2">Create Topic</button>
-        </form>
-        {% endif %}
+        
+        <h3>Hello There</h3>
+        
     </div>
 </div>
 
