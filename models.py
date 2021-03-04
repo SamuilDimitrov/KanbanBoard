@@ -11,7 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(120), nullable=False)
-    name = Column(String(100), nullable=False)
+    name = Column(String(200), nullable=False)
     company_id = Column(Integer, ForeignKey('company.id'), nullable=True)
     login_id = Column(String(36), nullable=True)
     
@@ -32,7 +32,6 @@ class Board(Base):
     project_name = Column(String(80), unique=True, nullable=False)
     description = Column(String(1000), nullable=True)
     company_id = Column(Integer, ForeignKey('company.id'), nullable = False)
-
 
 class Company(Base):
     __tablename__ = 'company'

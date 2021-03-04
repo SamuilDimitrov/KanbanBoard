@@ -9,7 +9,7 @@ from sqlalchemy import asc
 
 
 from database import db_session, init_db
-from models import User
+from models import User, Board, Company, Task, Connections
 
 login_manager = LoginManager()
 
@@ -37,6 +37,9 @@ def register():
         return redirect(url_for('index'))
     if request.method == "POST":
         username = request.form["username"]
+        name = request.form["name"]
+        request.form["company"]
+        company = Company.query.filter_by(name=request.form["company"]).first()
         password = request.form["password"]
         confirm_pasword = request.form["verify_password"]
         user = User.query.filter_by(username=username).first()
@@ -44,14 +47,16 @@ def register():
             flash("This username already exists!","danger")
             return render_template("register.html")
         if confirm_pasword == password:
-            user = User(username=username, password=generate_password_hash(password))
+            user = User(username=username, password=generate_password_hash(password), name=name, company_id=company.id)
             db_session.add(user)
             db_session.commit()
             flash("Registration complete!","success")
             return redirect(url_for('login'))
         else:
             flash("Passwords doesn`t match!","danger")
-    return render_template("register.html")
+            
+    companyes = Company.query.all()
+    return render_template("register.html", companyes = companyes)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
