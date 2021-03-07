@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+Profile
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-3">
+        <h1>Join Company</h1>
+        <form method="POST" action="/joinCompany">
+        	<div class="form-group">
+                <label for="exampleFormControlSelect1">Select Company</label>
+                <select name="company" class="form-control" id="exampleFormControlSelect1">
+                    {% for company in companyes %}
+                        <option>{{company.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">Company Password</label>
+                <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" maxlength="100"  required>
+            </div>
+        </form>
+        <p stile="margin-top: 10px;"> Don't have a company? <a class="mt2" href="{{ url_for('registerCompany') }}">Register one now!</a></p>
+    </div>
+</div>
+{% endblock %}
