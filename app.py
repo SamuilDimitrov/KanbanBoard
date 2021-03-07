@@ -19,6 +19,11 @@ app.secret_key = "Thisissecret"
 
 
 init_db()
+'''
+com = Company(name="Unemployed", address="Home")
+db_session.add(com)
+db_session.commit()
+'''
 login_manager.init_app(app)
 
 @login_manager.user_loader
@@ -77,8 +82,6 @@ def login():
             flash("Wrong username or password!","danger")
             return redirect(url_for('login'))
 
-
-
 @app.route('/logout')
 @login_required
 def logout():
@@ -86,6 +89,30 @@ def logout():
     db_session.commit()
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/registerCompany', methods=['GET', 'POST'])
+def registerCompany():
+    if not current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if request.method == "POST":
+        name = request.form["name"]
+        address = request.form["address"]
+        password = request.form["password"]
+        confirm_pasword = request.form["verify_password"]
+        company = Company.query.filter_by(name=name).first()
+        if(company is not None):
+            flash("This Company already exists!","danger")
+        else:
+            if confirm_pasword == password:
+                company_to_create = Company(name=name, password=generate_password_hash(password), address=address, admin_id=current_user.id)
+                db_session.add(company_to_create)
+                db_session.commit()
+                flash("Registration complete!","success")
+                return redirect(url_for('profile'))
+            else:
+                flash("Passwords doesn`t match!","danger")
+    return render_template("registerCompany.html")
+
 """
 @app.route('/create_topic', methods=['GET', 'POST'])
 @login_required
