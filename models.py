@@ -12,7 +12,7 @@ class User(Base):
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(120), nullable=False)
     name = Column(String(200), nullable=False)
-    company_id = Column(Integer, ForeignKey('company.id'), nullable=True)
+    company_id = Column(Integer, ForeignKey('company.id'), nullable=True, default=1)
     login_id = Column(String(36), nullable=True)
     
     @property
@@ -38,6 +38,8 @@ class Company(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(200), unique=True, nullable=False)
     address = Column(String(200), unique=True, nullable=False)
+    admin_id = Column(Integer, ForeignKey('user.id'))
+    password = Column(String(120))
 
 class Task(Base):
     __tablename__ = 'task'
