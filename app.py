@@ -43,7 +43,6 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         name = request.form["name"]
-        request.form["company"]
         company = Company.query.filter_by(name=request.form["company"]).first()
         password = request.form["password"]
         confirm_pasword = request.form["verify_password"]
@@ -62,6 +61,24 @@ def register():
             
     companyes = Company.query.all()
     return render_template("register.html", companyes = companyes)
+  
+@app.route('/joinCompany', methods=['GET', 'POST'])
+@login_required
+def joinCompany():
+	if request.method == "POST":
+			company = Company.query.filter_by(name=request.form["company"]).first()
+			username = current_user.username
+			user = User.query.filter_by(username=username).first()
+			if check_password_hash(company.password, request.form["password"]):
+				user.company_id = company.id
+				db_session.commit()
+				flash("Company joined!","success")
+				return redirect(url_for('profile'))
+			else:
+				flash("Passwords doesn't match!","danger")
+				return redirect(url_for('joinCompany'))
+	companyes = Company.query.all()
+	return render_template("joinCompany.html", companyes = companyes)
     
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -83,7 +100,7 @@ def profile():
 			flash("Wrong password!","danger")
 			return redirect(url_for('profile'))
 	else:
-		return render_template("profile.html");
+		return render_template("profile.html")
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -133,11 +150,8 @@ def registerCompany():
             else:
                 flash("Passwords doesn`t match!","danger")
     return render_template("registerCompany.html")
-    
-@app.route('/joinCompany', methods=['GET', 'POST'])
-@login_required
-def joinCompany():
-    return render_template("joinCompany.html")
+
+
 
 @app.route('/create_project', methods=['GET', 'POST'])
 @login_required
