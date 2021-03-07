@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Project
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-3">
+        <h1>Create Project</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label for="exampleFormControlInput1" class="form-label">Name of the Project</label>
+                <input type="text" name="name" class="form-control" id="exampleFormControlInput1"
+                    placeholder="Name of topic" required>
+            </div>
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1" class="form-label">Discription</label>
+                <textarea type="text" name="description" class="form-control" id="exampleFormControlInput1"
+                    placeholder="Discription" rows="4"></textarea> 
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
