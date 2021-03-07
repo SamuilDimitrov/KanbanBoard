@@ -155,14 +155,14 @@ def registerCompany():
 
 @app.route('/create_project', methods=['GET', 'POST'])
 @login_required
-def create_topic():
+def create_project():
     if request.method == "POST":
         project_name = request.form["name"]
         description = request.form["description"]
         project = Board(project_name=name, description=description, company_id=current_user.company_id)
         db_session.add(project)
         db_session.commit()
-        flash("Topic added successfully!","success")
+        flash("Project added successfully!","success")
         return redirect(url_for('index'))
     return render_template("create_project.html")
 
