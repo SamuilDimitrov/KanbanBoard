@@ -113,9 +113,8 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route('/registerCompany', methods=['GET', 'POST'])
+@login_required
 def registerCompany():
-    if not current_user.is_authenticated:
-        return redirect(url_for('index'))
     if request.method == "POST":
         name = request.form["name"]
         address = request.form["address"]
@@ -140,27 +139,20 @@ def registerCompany():
 def joinCompany():
     return render_template("joinCompany.html")
 
-"""
-@app.route('/create_topic', methods=['GET', 'POST'])
+@app.route('/create_project', methods=['GET', 'POST'])
 @login_required
 def create_topic():
     if request.method == "POST":
-        name = request.form["name"]
+        project_name = request.form["name"]
         description = request.form["description"]
-        print(description);
-        topics = Topic.query.filter_by(name=name).first()
+        project = Board(project_name=name, description=description, company_id=current_user.company_id)
+        db_session.add(project)
+        db_session.commit()
+        flash("Topic added successfully!","success")
+        return redirect(url_for('index'))
+    return render_template("create_project.html")
 
-        if topics:
-            flash("This topic already exists!","danger")
-            return render_template("create_topic.html")
-        else:
-            topic = Topic(name=name, description = description)
-            db_session.add(topic)
-            db_session.commit()
-            flash("Topic added successfully!","success")
-            return redirect(url_for('index'))
-    return render_template("create_topic.html")
-
+"""
 @app.route('/topic/<int:topic_id>')
 def show_topic(topic_id):
     topic = Topic.query.filter_by(id=topic_id).first()
