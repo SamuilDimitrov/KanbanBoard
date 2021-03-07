@@ -57,6 +57,28 @@ def register():
             
     companyes = Company.query.all()
     return render_template("register.html", companyes = companyes)
+    
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+	if request.method == "POST":
+		username = request.form["username"]
+		user = User.query.filter_by(username=username).first()
+		password = request.form["password"]
+		if check_password_hash(current_user.password, request.form["password"]):
+			if(user is not None):
+				flash("This username already exists!","danger")
+				return render_template("profile.html")
+			current_user.username = username
+			current_user.name = request.form["name"]
+			db_session.commit()
+			flash("Profile Updated!","success")
+			return redirect(url_for('profile'))
+		else:
+			flash("Wrong password!","danger")
+			return redirect(url_for('profile'))
+	else:
+		return render_template("profile.html");
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -156,10 +178,7 @@ def change(id):
         return redirect("/topic/"+str(post_to_change.topic_id))
     return render_template('change.html', post = post_to_change)
 """
-@app.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    return render_template("profile.html")
+
 
 @app.route('/',methods=['GET', 'POST'])
 def index():
