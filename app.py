@@ -134,6 +134,11 @@ def registerCompany():
             else:
                 flash("Passwords doesn`t match!","danger")
     return render_template("registerCompany.html")
+    
+@app.route('/joinCompany', methods=['GET', 'POST'])
+@login_required
+def joinCompany():
+    return render_template("joinCompany.html")
 
 """
 @app.route('/create_topic', methods=['GET', 'POST'])
