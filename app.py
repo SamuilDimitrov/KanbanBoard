@@ -6,13 +6,13 @@ from flask_login import login_user, login_required, current_user, logout_user
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import asc
+from flask_marshmallow import Marshmallow
 
 
 from database import db_session, init_db
 from models import User, Board, Company, Task, Connections
 
 login_manager = LoginManager()
-
 
 app = Flask(__name__)
 app.secret_key = "Thisissecret"
@@ -24,7 +24,15 @@ com = Company(name="Unemployed", address="Home")
 db_session.add(com)
 db_session.commit()
 '''
+ma = Marshmallow(app)
 login_manager.init_app(app)
+
+class TaskSchema(ma.Schema):
+    class Meta:
+        fields = ('id','project_id','taskname', 'description', 'completedate','state')
+
+task_schema = TaskSchema()
+tasks_schema = TaskSchema(many=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -151,32 +159,48 @@ def registerCompany():
                 flash("Passwords doesn`t match!","danger")
     return render_template("registerCompany.html")
 
-
-
 @app.route('/create_project', methods=['GET', 'POST'])
 @login_required
 def create_project():
     if request.method == "POST":
         project_name = request.form["name"]
         description = request.form["description"]
-        project = Board(project_name=name, description=description, company_id=current_user.company_id)
+        project = Board(project_name=project_name, description=description, company_id=current_user.company_id)
         db_session.add(project)
         db_session.commit()
         flash("Project added successfully!","success")
         return redirect(url_for('index'))
     return render_template("create_project.html")
 
-"""
-@app.route('/topic/<int:topic_id>')
-def show_topic(topic_id):
-    topic = Topic.query.filter_by(id=topic_id).first()
-    posts = Post.query.filter_by(topic_id=topic_id).order_by(asc(Post.id))
-    entries = []
-    for post in posts:
-        entry = lambda: None; entry.post = post; entry.user = User.query.filter_by(id=post.user_id).first()
-        entries.append(entry)
-    return render_template("topic.html",topic = topic,posts = posts,entries = entries)
+@app.route('/project/<int:project_id>')
+@login_required
+def show_project(project_id):
+    project = Board.query.filter_by(id=project_id).first()
+    all_tasks = Task.query.filter_by(project_id=project_id).all()
+    result = tasks_schema.dump(all_tasks).data
     
+    to_do = []
+    progress = []
+    testign = []
+    done = []
+    
+    for i in result:
+        if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
+            i['overdue'] = False
+        else:
+            i['overdue'] = True
+        if i['state'] == 'TO DO':
+            to_do.append(i)
+        elif i['state'] == 'PROGRESS':
+            progress.append(i)
+        elif i['state'] == 'TESTING':
+            testign.append(i)
+        else:
+            done.append(i)
+
+    return render_template("project.html",update_todo = to_do, update_progress = progress, update_testign = testign, update_done = done)
+    
+"""
 @app.route('/create_post/<int:topic_id>', methods=['GET', 'POST'])
 @login_required
 def create_post(topic_id):
@@ -220,4 +244,8 @@ def change(id):
 
 @app.route('/',methods=['GET', 'POST'])
 def index():
-    return render_template("index.html")
+    if current_user.is_authenticated:
+        projects = Board.query.filter_by(company_id = current_user.company_id).all()
+        return render_template("index.html",projects = projects)
+    else:
+        return render_template("index_for_non_users.html")

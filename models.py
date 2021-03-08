@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship, aliased
 from sqlalchemy.sql.expression import func
 from datetime import datetime
-import enum
+
 
 from database import Base
 
@@ -45,10 +45,12 @@ class Task(Base):
     __tablename__ = 'task'
     id = Column(Integer, primary_key=True)
     project_id = Column(Integer, ForeignKey('board.id'), nullable=False)
-    task_name = Column(String(1000), nullable=False)
+    taskname = Column(String(1000), nullable=False)
     description = Column(String(1000), nullable=True)
-    date_created = Column(DateTime, default=datetime.now)
+    completedate = Column(DateTime)
     state = Column(Enum('TO DO','PROGRESS','TESTING','DONE'))
+
+
 
 class Connections(Base):
     __tablename__ = 'connections'
