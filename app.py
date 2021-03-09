@@ -176,29 +176,32 @@ def create_project():
 @login_required
 def show_project(project_id):
     project = Board.query.filter_by(id=project_id).first()
-    all_tasks = Task.query.filter_by(project_id=project_id).all()
-    result = tasks_schema.dump(all_tasks).data
-    
-    to_do = []
-    progress = []
-    testign = []
-    done = []
-    
-    for i in result:
-        if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
-            i['overdue'] = False
-        else:
-            i['overdue'] = True
-        if i['state'] == 'TO DO':
-            to_do.append(i)
-        elif i['state'] == 'PROGRESS':
-            progress.append(i)
-        elif i['state'] == 'TESTING':
-            testign.append(i)
-        else:
-            done.append(i)
-
-    return render_template("project.html",update_todo = to_do, update_progress = progress, update_testign = testign, update_done = done)
+    if project.company_id != current_user.company_id:
+        return redirect(url_for('login'))
+    else:
+        all_tasks = Task.query.filter_by(project_id=project_id).all()
+        result = tasks_schema.dump(all_tasks).data
+        
+        to_do = []
+        progress = []
+        testign = []
+        done = []
+        
+        for i in result:
+            if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
+                i['overdue'] = False
+            else:
+                i['overdue'] = True
+            if i['state'] == 'TO DO':
+                to_do.append(i)
+            elif i['state'] == 'PROGRESS':
+                progress.append(i)
+            elif i['state'] == 'TESTING':
+                testign.append(i)
+            else:
+                done.append(i)
+                
+        return render_template("project.html",update_todo = to_do, update_progress = progress, update_testign = testign, update_done = done)
     
 """
 @app.route('/create_post/<int:topic_id>', methods=['GET', 'POST'])
