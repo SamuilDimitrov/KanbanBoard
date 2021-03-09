@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import asc
 from flask_marshmallow import Marshmallow
+from datetime import datetime
 
 from database import db_session, init_db
 from models import User, Board, Company, Task, Connections
@@ -184,7 +185,7 @@ def show_project(project_id):
         
         to_do = []
         progress = []
-        testign = []
+        testing = []
         done = []
         
         for i in result:
@@ -197,12 +198,47 @@ def show_project(project_id):
             elif i['state'] == 'PROGRESS':
                 progress.append(i)
             elif i['state'] == 'TESTING':
-                testign.append(i)
+                testing.append(i)
             else:
                 done.append(i)
                 
-        return render_template("project.html",update_todo = to_do, update_progress = progress, update_testign = testign, update_done = done)
-    
+        return render_template("project.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project)
+
+@app.route('/add_task/<int:project_id>', methods=['GET', 'POST'])
+def add_task(project_id):
+    project = Board.query.filter_by(id=project_id).first()
+    if project.company_id != current_user.company_id:
+        return redirect(url_for('login'))
+
+    taskname = request.form['taskname']
+    description = request.form['description']
+    completedate = datetime.strptime(request.form['completedate'], '%Y-%m-%d')
+    taskstate = request.form['taskcategory']
+
+    new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate)
+
+    db_session.add(new_task)
+    db_session.commit()
+
+    return redirect(url_for('show_project', project_id=project_id))
+
+@app.route('/move_task/<task_id>/<state>/<project_id>', methods=['GET'])
+def move_task(task_id, state,project_id):
+    task = Task.query.get(task_id)
+    task.state = state
+
+    db_session.commit()
+    return redirect(url_for('show_project', project_id=project_id))
+
+
+@app.route('/delete_task/<task_id>/<project_id>', methods=['GET'])
+def delete_task(task_id, project_id):
+    task = Task.query.get(task_id)
+    db_session.delete(task)
+    db_session.commit()
+
+    return redirect(url_for('show_project', project_id=project_id))
+
 """
 @app.route('/create_post/<int:topic_id>', methods=['GET', 'POST'])
 @login_required
