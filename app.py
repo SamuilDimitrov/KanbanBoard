@@ -239,48 +239,6 @@ def delete_task(task_id, project_id):
 
     return redirect(url_for('show_project', project_id=project_id))
 
-"""
-@app.route('/create_post/<int:topic_id>', methods=['GET', 'POST'])
-@login_required
-def create_post(topic_id):
-    topic = Topic.query.filter_by(id=topic_id).first()
-    if request.method == 'POST':
-        content = request.form["content"]
-        if len(content) > 0:
-            print(current_user.id)
-            post = Post(content = content,topic_id = topic_id,user_id = current_user.id)
-            db_session.add(post)
-            db_session.commit()
-            flash("Post added successfully!","success")
-            return redirect("/topic/"+str(topic_id))
-        else:
-            flash("Add content")
-    return render_template("create_post.html",topic = topic)
-
-@app.route('/delete/<int:id>')
-@login_required
-def delete(id):
-    post_to_delete = Post.query.filter_by(id = id).first()
-    if current_user.id != post_to_delete.user_id:
-        return redirect("/topic/"+str(post_to_delete.topic_id))
-    db_session.delete(post_to_delete)
-    db_session.commit()
-    return redirect("/topic/"+str(post_to_delete.topic_id))
-
-@app.route('/change/<int:id>',methods=['GET', 'POST'])
-@login_required
-def change(id):
-    post_to_change = Post.query.filter_by(id = id).first()
-    if current_user.id != post_to_change.user_id:
-        return render_template('change.html', post = post_to_change)
-    if request.method == 'POST':
-        post_to_change.content = request.form['Change_content']
-        db_session.commit()
-        return redirect("/topic/"+str(post_to_change.topic_id))
-    return render_template('change.html', post = post_to_change)
-"""
-
-
 @app.route('/',methods=['GET', 'POST'])
 def index():
     if current_user.is_authenticated:
