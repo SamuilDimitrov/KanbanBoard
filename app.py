@@ -8,7 +8,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import asc
 from flask_marshmallow import Marshmallow
 
-
 from database import db_session, init_db
 from models import User, Board, Company, Task, Connections
 
@@ -66,10 +65,10 @@ def register():
             return redirect(url_for('login'))
         else:
             flash("Passwords doesn`t match!","danger")
-            
+
     companyes = Company.query.all()
     return render_template("register.html", companyes = companyes)
-  
+
 @app.route('/joinCompany', methods=['GET', 'POST'])
 @login_required
 def joinCompany():
@@ -87,7 +86,7 @@ def joinCompany():
 				return redirect(url_for('joinCompany'))
 	companyes = Company.query.all()
 	return render_template("joinCompany.html", companyes = companyes)
-    
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -176,6 +175,7 @@ def create_project():
 @login_required
 def show_project(project_id):
     project = Board.query.filter_by(id=project_id).first()
+
     if project.company_id != current_user.company_id:
         return redirect(url_for('login'))
     else:
@@ -220,7 +220,7 @@ def create_post(topic_id):
         else:
             flash("Add content")
     return render_template("create_post.html",topic = topic)
-    
+
 @app.route('/delete/<int:id>')
 @login_required
 def delete(id):
