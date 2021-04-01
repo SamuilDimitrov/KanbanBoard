@@ -136,6 +136,10 @@ def logout():
     db_session.commit()
     logout_user()
     return redirect(url_for('login'))
+    
+@app.route('/forgotPassword')
+def forgotPassword():
+	return render_template("forgotPassword.html")
 
 @app.route('/registerCompany', methods=['GET', 'POST'])
 @login_required
@@ -181,7 +185,7 @@ def show_project(project_id):
         return redirect(url_for('login'))
     else:
         all_tasks = Task.query.filter_by(project_id=project_id).all()
-        result = tasks_schema.dump(all_tasks).data
+        result = tasks_schema.dump(all_tasks)
         
         to_do = []
         progress = []

@@ -6,30 +6,34 @@ Home
 
 {% block body %}
 
+
 <div class="row justify-content-center mt-2">
     <div class="col-md-4">
         
-        <h3>Hello There</h3>
+        <h3 style="margin-top: 15px; text-align: center;">Current Projects</h3>
         {% if not projects %}
         <h3>There are no projects here</h3>
         {% else %}
         <ul class="list-group">
             {% for project in projects %}
-            <li class="list-group-item">
-                <h4>
-                    <a href="{{url_for('show_project', project_id=project.id)}}">{{project.project_name}}</a>
-                </h4>
-                <h6>
-                    {{project.description}}
-                </h6>
-            </li>
+		    <li onclick="location.href = '{{url_for('show_project', project_id=project.id)}}';" style="border-left: 10px solid #00bfff; background-color: #e6f9ff; margin-bottom: 10px;" class="list-group-item">
+		    	<div>
+		            <h4 style="text-align: center";>
+		                {{project.project_name}}
+		            </h4>
+		            <h6 style="text-align: center;">
+		                {{project.description}}
+		            </h6>
+		        </div>
+		    </li>
             {% endfor %}
         </ul>
         {% endif %}
         {% if current_user.is_authenticated %}
-            <a href="{{url_for('create_project')}}"><button  class="btn btn-primary btn-block btn-lg mt-2">Create Project</button>
+            <a href="{{url_for('create_project')}}"><button  class="btn btn-primary btn-block btn-lg mt-2">Create New Project</button>
         {% endif %}
     </div>
 </div>
+
 
 {% endblock %}
