@@ -132,6 +132,10 @@ def logout():
     db_session.commit()
     logout_user()
     return redirect(url_for('login'))
+    
+@app.route('/forgotPassword')
+def forgotPassword():
+	return render_template("forgotPassword.html")
 
 @app.route('/confirm_email/<token>')
 @login_required

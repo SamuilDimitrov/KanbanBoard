@@ -38,10 +38,10 @@
 {% endblock %}
 
 {% block body %}
-<div class="row">
-    <div class="card col" style="width: 18rem; margin: 5px">
+<div style="margin-left: 50px;" class="row">
+    <div class="card col" style="margin: 5px; border: 2px solid black;">
         <div class="card-header">
-            To Do
+            <p style="margin-left: 27%; margin-top: 10%;"> To Do</p>
         </div>
         <ul class="list-group list-group-flush">
             {% for todo in update_todo %}
@@ -73,8 +73,8 @@
         </ul>
     </div>
     <div class="card col" style="width: 18rem; margin: 5px">
-        <div class="card-header">
-            In Progress
+        <div style="font-size: 15px;" class="card-header">
+            <p style="margin-left: 15%; margin-top: 10%;"> In Progress </p>
         </div>
         <ul class="list-group list-group-flush">
             {% for progress in update_progress %}
@@ -111,7 +111,7 @@
     </div>
     <div class="card col" style="width: 18rem; margin: 5px">
         <div class="card-header">
-            Testing
+            <p style="margin-left: 27%; margin-top: 10%;"> Testing </p>
         </div>
         <ul class="list-group list-group-flush">
             {% for testing in update_testing %}
@@ -148,7 +148,7 @@
     </div>
     <div class="card col" style="width: 18rem; margin: 5px">
         <div class="card-header">
-            Done
+            <p style="margin-left: 27%; margin-top: 10%;"> Done </p>
         </div>
         <ul class="list-group list-group-flush">
             {% for done in update_done %}
