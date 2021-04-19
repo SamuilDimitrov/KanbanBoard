@@ -186,6 +186,9 @@
             <button type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
                 data-target="#myModal">Add Task</button>
         </div>
+        {% if current_user.id == project.admin_id %}
+            <a href="#"><button  class="btn btn-primary btn-block btn-lg mt-2">Add Colaborator</button>
+        {% endif %}
         <div class="col center">
             <button type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
                 onclick="show_all();">Delete</button>
@@ -207,7 +210,7 @@
                 <form method="post" action="{{url_for('add_task', project_id=project.id)}}">
                     <div class="form-group">
                         <label for="taskname">Task Name</label>
-                        <input type="text" class="form-control" id="taskname" name="taskname" placeholder="Enter task">
+                        <input type="text" class="form-control" id="taskname" name="taskname" placeholder="Enter task" required>
                     </div>
                     <div class="form-group">
                         <label for="taskname">Task Description</label>
@@ -215,7 +218,7 @@
                     </div>
                     <div class="form-group">
                         <label for="completedate">Date</label>
-                        <input class="form-control" type="date" id="completedate" name="completedate">
+                        <input class="form-control" type="date" id="completedate" name="completedate" required>
                     </div>
                     <div class="form-group">
                         <label for="taskcategory">Category</label>

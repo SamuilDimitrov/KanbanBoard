@@ -35,7 +35,6 @@ flask run
 
 ### TO DO LIST
 
-	1. ADD DROPDOWN MENU WITH COMPANIES.
-	2. REGISTER COMPANIES.
-	3. CREATE BOARD FROM COMPANY YOU CHOOSE.
+	prerabotka na loghin i prava s SAML
+	
 ####

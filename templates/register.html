@@ -18,20 +18,13 @@ Register
                 <input type="text" name="name" class="form-control" placeholder="Your name" maxlength="200" required />
             </div>
             <div class="form-group">
-                <label for="exampleFormControlSelect1">Select company</label>
-                <select name="company" class="form-control" id="exampleFormControlSelect1">
-                    {% for company in companyes %}
-                        <option>{{company.name}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="exampleInputPassword1">CompanyPassword (8 characters minimum)</label>
-                <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" maxlength="100"  required>
-            </div>
+                <label for="exampleInputEmail1">Email address</label>
+                <input type="email" name="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+              </div>
             <div class="form-group">
                 <label for="exampleInputPassword1">Password (8 characters minimum)</label>
-                <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" maxlength="100"  required>
+                <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" minlength="8" maxlength="100"  required>
             </div>
             <div class="form-group">
                 <label for="exampleInputPassword1">Confirm Password</label>
