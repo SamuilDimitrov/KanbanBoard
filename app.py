@@ -208,7 +208,6 @@ def login():
     if request.method == 'GET':
         return render_template("login.html")
     else:
-
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
             flash("You are logged in!","success")
@@ -229,9 +228,43 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
     
-@app.route('/forgotPassword')
+@app.route('/forgotPassword', methods=["GET", "POST"])
 def forgotPassword():
-	return render_template("forgotPassword.html")
+    if request.method == 'GET':
+        return render_template("forgotPassword.html")
+    else:
+        user = User.query.filter_by(email=request.form["email"]).first()
+        subject = "Password reset requested"
+        token = s.dumps(user.email, salt='recover-key')
+        
+        msg = Message(subject, sender='kanban.tues@abv.bg', recipients=[user.email])
+        link = url_for('reset_with_token', token=token, _external=True)
+        msg.body = 'Your link is {}'.format(link)
+        mail.send(msg)
+        return render_template('check_email.html')
+        
+        
+@app.route('/reset/<token>', methods=["GET", "POST"])
+def reset_with_token(token):
+    try:
+        email = s.loads(token, salt="recover-key", max_age=3600)
+    except:
+        flash('The link is invalid or has expired.', 'danger')
+        return redirect(url_for('index'))
+
+    user = User.query.filter_by(email=email).first()
+    if request.method == 'POST':
+        new_pass = request.form["new_pass"]
+        new_pass_conf = request.form["conf_new_pass"]
+        if new_pass == new_pass_conf:
+            user.password = generate_password_hash(new_pass)
+
+            db_session.add(user)
+            db_session.commit()
+    else:
+        return render_template("recover_password.html")
+    return redirect(url_for('login'))
+
 
 @app.route('/confirm_email/<token>')
 @login_required
