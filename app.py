@@ -1,7 +1,7 @@
 import uuid
 import os
 
-from flask import Flask, request, render_template, redirect, make_response, url_for, session, flash, make_response
+from flask import Flask, request, render_template, redirect, make_response, url_for, session, flash, make_response, jsonify
 from flask_login import login_user, login_required, current_user, logout_user
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -51,6 +51,103 @@ def load_user(user_id):
 def unauthorized():
     return redirect(url_for('login'))
 
+@app.route('/invite/<int:project_id>/<username>')
+@login_required
+@check_confirmed
+def invite(project_id,username):
+    project = Project.query.filter_by(id=project_id).first()
+    if project.admin_id != current_user.id:
+        return redirect(url_for('index'))
+
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("There is no such user", "danger")
+        return redirect(url_for('search_for_colaborator', project_id=project_id))
+
+    con = Connections.query.filter_by(project_id=project_id, user_id=user.id).first()
+    if con:
+        flash("This user is already colaborator", "danger")
+        return redirect(url_for('search_for_colaborator', project_id=project_id))
+    
+    token = s.dumps([project_id,username], salt='add-col')
+    msg = Message('Invitation', sender='kanban.tues@abv.bg', recipients=[user.email])
+    link = url_for('check_invite', token=token, _external=True)
+    msg.body = '{} has invited you to colab in their project. The invite link is {}'.format(current_user.username, link)
+    mail.send(msg)
+    flash('The invitation has been send.', 'success')
+    return redirect(url_for('show_project', project_id=project_id))
+
+@app.route('/check_invite/<token>')
+@login_required
+@check_confirmed
+def check_invite(token):
+    try:
+        invite = s.loads(token, salt='add-col', max_age=3600)
+        print(invite)
+    except SignatureExpired:
+        flash('The link is invalid or has expired.', 'danger')
+        return '<h1>The token is expired!</h1>'
+    
+    user = User.query.filter_by(username=invite[1]).first()
+    project = Project.query.filter_by(id=invite[0]).first()
+    if user is None:
+        flash('user There has been an error pleas ask for new invite.', 'danger')
+        return redirect(url_for('index'))
+    if project is None:
+        flash('project There has been an error pleas ask for new invite.', 'danger')
+        return redirect(url_for('index'))
+
+    con = Connections.query.filter_by(project_id=project.id, user_id=user.id).first()
+    if con:
+        flash("This user is already colaborator", "danger")
+        return redirect(url_for('index'))
+    if current_user.id != user.id:
+        flash('The invitation is invalid because of not maching identities', 'danger')
+        return redirect(url_for('index'))
+    conection = Connections(user_id=user.id, project_id=project.id)
+    db_session.add(conection)
+    db_session.commit()
+
+    flash("You have been added as colaborator", "success")
+    return redirect(url_for('index'))
+
+
+@app.route('/_livesearch')
+@login_required
+@check_confirmed
+def livesearch():
+    text = request.args.get('text', type=str)
+
+    search = f"%{text}%"
+    print(search)
+    users = User.query.filter(User.username.like(search)).all()
+
+    result = {user for user in users if user.id != current_user.id}
+    
+    class JsonUser:
+        def __init__(self, id, username, email, name):
+            self.id = id
+            self.name = name
+            self.username = username
+            self.email = email
+
+        def to_json(self):
+            return self.__dict__
+
+    result = [JsonUser(r.id, r.username, r.email, r.name).to_json() for r in result]
+
+    print(result)
+
+    return jsonify(result)
+
+@app.route("/search_for_colaborator/<int:project_id>")
+@login_required
+@check_confirmed
+def search_for_colaborator(project_id):
+    project = Project.query.filter_by(id=project_id).first()
+    if project.admin_id != current_user.id:
+        return redirect(url_for('index'))
+    return render_template("add_colaborator.html",project=project)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -74,11 +171,11 @@ def register():
 
         if confirm_pasword == password:
             user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=False)
+            
+            send_token(email)
 
             db_session.add(user)
             db_session.commit()
-
-            send_token(email)
 
             user.login_id = str(uuid.uuid4())
             db_session.commit()
@@ -99,11 +196,10 @@ def resend():
 
 def send_token(email):
     token = s.dumps(email, salt='email-confirm')
-    msg = Message('Confirm Email', sender='kanban.project.tues@gmail.com', recipients=[email])
+    msg = Message('Confirm Email', sender='kanban.tues@abv.bg', recipients=[email])
     link = url_for('confirm_email', token=token, _external=True)
     msg.body = 'Your link is {}'.format(link)
     mail.send(msg)
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -140,7 +236,6 @@ def forgotPassword():
 @app.route('/confirm_email/<token>')
 @login_required
 def confirm_email(token):
-    print("HERE")
     try:
         email = s.loads(token, salt='email-confirm', max_age=3600)
     except SignatureExpired:
@@ -187,7 +282,6 @@ def profile():
 	else:
 		return render_template("profile.html")
 
-
 @app.route('/create_project', methods=['GET', 'POST'])
 @login_required
 @check_confirmed
@@ -213,9 +307,10 @@ def create_project():
 @check_confirmed
 def show_project(project_id):
     project = Project.query.filter_by(id=project_id).first()
-
-    if project.admin_id != current_user.id:
-        return redirect(url_for('login'))
+    con = Connections.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+    if con is None:
+        flash("This user is already colaborator", "danger")
+        return redirect(url_for('index'))
     else:
         all_tasks = Task.query.filter_by(project_id=project_id).all()
         result = tasks_schema.dump(all_tasks)

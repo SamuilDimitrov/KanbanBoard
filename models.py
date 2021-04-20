@@ -64,3 +64,4 @@ class Connections(Base):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
     task_id = Column(Integer, ForeignKey('task.id'))
+    
