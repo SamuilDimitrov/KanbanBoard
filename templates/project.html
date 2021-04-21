@@ -187,7 +187,7 @@
                 data-target="#myModal">Add Task</button>
         </div>
         {% if current_user.id == project.admin_id %}
-            <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-primary btn-block btn-lg mt-2">Add Colaborator</button>
+            <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-primary btn-block btn-lg mt-2">Add Colaborator</button></a>
         {% endif %}
         <div class="col center">
             <button type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
