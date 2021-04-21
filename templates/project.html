@@ -39,9 +39,9 @@
 
 {% block body %}
 <div style="margin-left: 50px;" class="row">
-    <div class="card col" style="margin: 5px; border: 2px solid black;">
+    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
         <div class="card-header">
-            <p style="margin-left: 27%; margin-top: 10%;"> To Do</p>
+            <p style="margin-left: 35%; margin-top: 8%; font-size: 20px;"> To Do</p>
         </div>
         <ul class="list-group list-group-flush">
             {% for todo in update_todo %}
@@ -72,9 +72,9 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="card col" style="width: 18rem; margin: 5px">
+    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
         <div style="font-size: 15px;" class="card-header">
-            <p style="margin-left: 15%; margin-top: 10%;"> In Progress </p>
+            <p style="margin-left: 27%; margin-top: 8%; font-size: 20px;"> In Progress </p>
         </div>
         <ul class="list-group list-group-flush">
             {% for progress in update_progress %}
@@ -109,9 +109,9 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="card col" style="width: 18rem; margin: 5px">
+    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
         <div class="card-header">
-            <p style="margin-left: 27%; margin-top: 10%;"> Testing </p>
+            <p style="margin-left: 35%; margin-top: 8%; font-size: 20px;"> Testing </p>
         </div>
         <ul class="list-group list-group-flush">
             {% for testing in update_testing %}
@@ -146,9 +146,9 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="card col" style="width: 18rem; margin: 5px">
+    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
         <div class="card-header">
-            <p style="margin-left: 27%; margin-top: 10%;"> Done </p>
+            <p style="margin-left: 37%; margin-top: 8%; font-size: 20px;"> Done </p>
         </div>
         <ul class="list-group list-group-flush">
             {% for done in update_done %}
@@ -181,16 +181,16 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="row" style="width:60%">
+    <div class="row" style="width:26%;">
         <div class="col center">
-            <button type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
+            <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
                 data-target="#myModal">Add Task</button>
         </div>
         {% if current_user.id == project.admin_id %}
             <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-primary btn-block btn-lg mt-2">Add Colaborator</button></a>
         {% endif %}
         <div class="col center">
-            <button type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
+            <button style="float: left; font-family: Verdana;" type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
                 onclick="show_all();">Delete</button>
         </div>
     </div>
@@ -203,7 +203,7 @@
 
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" style="float:left">Add Task</h4>
+                <h4 class="modal-title" style="float:left;">Add Task</h4>
                 <button type="button" class="close" data-dismiss="modal" style="float:right">&times;</button>
             </div>
             <div class="modal-body">
