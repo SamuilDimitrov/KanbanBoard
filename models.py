@@ -25,7 +25,7 @@ class User(Base):
 
     def get_id(self):
         return self.login_id
-    
+
     def is_confirmed(self):
         return confirmed
 
@@ -56,6 +56,17 @@ class Task(Base):
     completedate = Column(DateTime)
     state = Column(Enum('TO DO','PROGRESS','TESTING','DONE'))
 
+class Technologies(Base):
+    __tablename__ = 'technologies'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+
+class ConnectTechnologies(Base):
+    __tablename__ = 'connecttechnologies'
+    id = Column(Integer, primary_key=True)
+    task_id = Column(Integer, ForeignKey('task.id'))
+    technology_id = Column(Integer, ForeignKey('technologies.id'))
+
 
 
 class Connections(Base):
@@ -64,4 +75,3 @@ class Connections(Base):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
     task_id = Column(Integer, ForeignKey('task.id'))
-    

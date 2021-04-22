@@ -68,7 +68,7 @@ def invite(project_id,username):
     if con:
         flash("This user is already colaborator", "danger")
         return redirect(url_for('search_for_colaborator', project_id=project_id))
-    
+
     token = s.dumps([project_id,username], salt='add-col')
     msg = Message('Invitation', sender='kanban.tues@abv.bg', recipients=[user.email])
     link = url_for('check_invite', token=token, _external=True)
@@ -87,7 +87,7 @@ def check_invite(token):
     except SignatureExpired:
         flash('The link is invalid or has expired.', 'danger')
         return '<h1>The token is expired!</h1>'
-    
+
     user = User.query.filter_by(username=invite[1]).first()
     project = Project.query.filter_by(id=invite[0]).first()
     if user is None:
@@ -123,7 +123,7 @@ def livesearch():
     users = User.query.filter(User.username.like(search)).all()
 
     result = {user for user in users if user.id != current_user.id}
-    
+
     class JsonUser:
         def __init__(self, id, username, email, name):
             self.id = id
@@ -159,7 +159,7 @@ def register():
         password = request.form["password"]
         confirm_pasword = request.form["verify_password"]
         email = request.form["email"]
-        
+
         user = User.query.filter_by(username=username).first()
         if(user is not None):
             flash("This username already exists!", "danger")
@@ -171,7 +171,7 @@ def register():
 
         if confirm_pasword == password:
             user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=False)
-            
+
             send_token(email)
 
             db_session.add(user)
@@ -184,7 +184,7 @@ def register():
             return redirect(url_for('unconfirmed'))
             #return render_template("go_confirm.html", email = email)
         else:
-            
+
             flash("Passwords doesn`t match!","danger")
 
     return render_template("register.html")
@@ -227,7 +227,7 @@ def logout():
     db_session.commit()
     logout_user()
     return redirect(url_for('login'))
-    
+
 @app.route('/forgotPassword', methods=["GET", "POST"])
 def forgotPassword():
     if request.method == 'GET':
@@ -236,14 +236,14 @@ def forgotPassword():
         user = User.query.filter_by(email=request.form["email"]).first()
         subject = "Password reset requested"
         token = s.dumps(user.email, salt='recover-key')
-        
+
         msg = Message(subject, sender='kanban.tues@abv.bg', recipients=[user.email])
         link = url_for('reset_with_token', token=token, _external=True)
         msg.body = 'Your link is {}'.format(link)
         mail.send(msg)
         return render_template('check_email.html')
-        
-        
+
+
 @app.route('/reset/<token>', methods=["GET", "POST"])
 def reset_with_token(token):
     try:
@@ -282,7 +282,7 @@ def confirm_email(token):
         user.confirmed = True
         db_session.commit()
         flash('You have confirmed your account. Thanks!', 'success')
-    return redirect(url_for('index'))   
+    return redirect(url_for('index'))
 
 @app.route('/unconfirmed')
 @login_required
@@ -330,7 +330,7 @@ def create_project():
         conection = Connections(user_id=current_user.id, project_id=project.id)
         db_session.add(conection)
         db_session.commit()
-        
+
         flash("Project added successfully!","success")
         return redirect(url_for('index'))
     return render_template("create_project.html")
@@ -347,12 +347,12 @@ def show_project(project_id):
     else:
         all_tasks = Task.query.filter_by(project_id=project_id).all()
         result = tasks_schema.dump(all_tasks)
-        
+
         to_do = []
         progress = []
         testing = []
         done = []
-        
+
         for i in result:
             if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
                 i['overdue'] = False
@@ -366,7 +366,7 @@ def show_project(project_id):
                 testing.append(i)
             else:
                 done.append(i)
-                
+
         return render_template("project.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project)
 
 @app.route('/add_task/<int:project_id>', methods=['GET', 'POST'])
