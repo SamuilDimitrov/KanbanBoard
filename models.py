@@ -56,18 +56,16 @@ class Task(Base):
     completedate = Column(DateTime)
     state = Column(Enum('TO DO','PROGRESS','TESTING','DONE'))
 
-class Technologies(Base):
-    __tablename__ = 'technologies'
+class Categoryes(Base):
+    __tablename__ = 'categoryes'
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
 
-class ConnectTechnologies(Base):
-    __tablename__ = 'connecttechnologies'
+class ConnectCategoryes(Base):
+    __tablename__ = 'connectcategoryes'
     id = Column(Integer, primary_key=True)
     task_id = Column(Integer, ForeignKey('task.id'))
-    technology_id = Column(Integer, ForeignKey('technologies.id'))
-
-
+    technology_id = Column(Integer, ForeignKey('categoryes.id'))
 
 class Connections(Base):
     __tablename__ = 'connections'
