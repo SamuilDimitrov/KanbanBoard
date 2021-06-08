@@ -74,8 +74,8 @@ class Connect_Categoryes(Base):
 class Connections_User_Project(Base):
     __tablename__ = 'connectionsuserproject'
     id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
 
 class Connections_User_Task(Base):
     __tablename__ = 'connectionsusertask'
@@ -92,5 +92,11 @@ class Connections_Sprint_User(Base):
 class Connections_Task_Sprint(Base):
     __tablename__ = 'connectionstasksprint'
     id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
+    sprint_id = Column(Integer, ForeignKey('sprint.id'), nullable=False)
     task_id = Column(Integer, ForeignKey('task.id'), nullable=False)
+
+class Connections_Board_Categoryes(Base):
+    __tablename__ = 'connectionsboardcategoryes'
+    id = Column(Integer, primary_key=True)
+    board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
+    categoryes_id = Column(Integer, ForeignKey('categoryes.id'))
