@@ -14,7 +14,8 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
 from decorators import check_confirmed
 from database import db_session, init_db
-from models import User, Project, Task, Connections
+from models import User, Project, Task, Categoryes, Board, Sprint
+from models import Connect_Categoryes, Connections_User_Project, Connections_User_Task, Connections_Sprint_User, Connections_Task_Sprint
 
 login_manager = LoginManager()
 
@@ -91,20 +92,20 @@ def check_invite(token):
     user = User.query.filter_by(username=invite[1]).first()
     project = Project.query.filter_by(id=invite[0]).first()
     if user is None:
-        flash('user There has been an error pleas ask for new invite.', 'danger')
+        flash('user There has been an error please ask for new invite.', 'danger')
         return redirect(url_for('index'))
     if project is None:
-        flash('project There has been an error pleas ask for new invite.', 'danger')
+        flash('project There has been an error please ask for new invite.', 'danger')
         return redirect(url_for('index'))
 
-    con = Connections.query.filter_by(project_id=project.id, user_id=user.id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=user.id).first()
     if con:
-        flash("This user is already colaborator", "danger")
+        flash("You are already colaborator", "danger")
         return redirect(url_for('index'))
     if current_user.id != user.id:
         flash('The invitation is invalid because of not maching identities', 'danger')
         return redirect(url_for('index'))
-    conection = Connections(user_id=user.id, project_id=project.id)
+    conection = Connections_User_Project(user_id=user.id, project_id=project.id)
     db_session.add(conection)
     db_session.commit()
 
@@ -221,7 +222,6 @@ def login():
 
 @app.route('/logout')
 @login_required
-@check_confirmed
 def logout():
     current_user.login_id = None
     db_session.commit()
@@ -242,7 +242,6 @@ def forgotPassword():
         msg.body = 'Your link is {}'.format(link)
         mail.send(msg)
         return render_template('check_email.html')
-
 
 @app.route('/reset/<token>', methods=["GET", "POST"])
 def reset_with_token(token):
@@ -265,17 +264,20 @@ def reset_with_token(token):
         return render_template("recover_password.html")
     return redirect(url_for('login'))
 
-
 @app.route('/confirm_email/<token>')
 @login_required
 def confirm_email(token):
     try:
         email = s.loads(token, salt='email-confirm', max_age=3600)
     except SignatureExpired:
+        email = s.loads(token, salt='email-confirm')
+        user = User.query.filter_by(email=email).first() 
+        db_session.delete(user)
+        db_session.commit()
         flash('The confirmation link is invalid or has expired.', 'danger')
         return '<h1>The token is expired!</h1>'
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first() 
     if user.confirmed:
         flash('Account already confirmed. Please login.', 'success')
     else:
@@ -398,7 +400,6 @@ def move_task(task_id, state,project_id):
 
     db_session.commit()
     return redirect(url_for('show_project', project_id=project_id))
-
 
 @app.route('/delete_task/<task_id>/<project_id>', methods=['GET'])
 @login_required
