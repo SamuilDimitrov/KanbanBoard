@@ -68,8 +68,8 @@ class Categoryes(Base):
 class Connect_Categoryes(Base):
     __tablename__ = 'connectcategoryes'
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey('task.id'))
-    categoryes_id = Column(Integer, ForeignKey('categoryes.id'))
+    task_id = Column(Integer, ForeignKey('task.id'), nullable=False)
+    categoryes_id = Column(Integer, ForeignKey('categoryes.id'), nullable=False)
 
 class Connections_User_Project(Base):
     __tablename__ = 'connectionsuserproject'
@@ -99,4 +99,4 @@ class Connections_Board_Categoryes(Base):
     __tablename__ = 'connectionsboardcategoryes'
     id = Column(Integer, primary_key=True)
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
-    categoryes_id = Column(Integer, ForeignKey('categoryes.id'))
+    categoryes_id = Column(Integer, ForeignKey('categoryes.id'), nullable=False)

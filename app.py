@@ -329,7 +329,7 @@ def create_project():
         db_session.add(project)
         db_session.commit()
 
-        conection = Connections(user_id=current_user.id, project_id=project.id)
+        conection = Connections_User_Project(user_id=current_user.id, project_id=project.id)
         db_session.add(conection)
         db_session.commit()
 
@@ -342,7 +342,7 @@ def create_project():
 @check_confirmed
 def show_project(project_id):
     project = Project.query.filter_by(id=project_id).first()
-    con = Connections.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
     if con is None:
         flash("This user is already colaborator", "danger")
         return redirect(url_for('index'))
@@ -415,7 +415,7 @@ def delete_task(task_id, project_id):
 def index():
     if current_user.is_authenticated:
         if current_user.confirmed == 1:
-            con = Connections.query.filter_by(user_id = current_user.id).all()
+            con = Connections_User_Project.query.filter_by(user_id = current_user.id).all()
             projects = []
             for c in con:
                 projects += Project.query.filter_by(id = c.project_id).all()
