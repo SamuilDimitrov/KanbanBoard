@@ -36,7 +36,7 @@ login_manager.init_app(app)
 class TaskSchema(ma.Schema):
     class Meta:
         fields = ('id', 'project_id', 'taskname',
-                  'description', 'completedate', 'state')
+                  'description', 'completedate', 'state','importance')
 
 
 task_schema = TaskSchema()
@@ -171,9 +171,9 @@ def register():
             return render_template("register.html")
 
         if confirm_pasword == password:
-            user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=False)
+            user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=True)
 
-            send_token(email)
+            #send_token(email)
 
             db_session.add(user)
             db_session.commit()
@@ -344,6 +344,24 @@ def show_project(project_id):
     project = Project.query.filter_by(id=project_id).first()
     con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
     if con is None:
+        flash("You are not a colaborator to this porject", "danger")
+        return redirect(url_for('index'))
+    else:
+        all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
+        result = tasks_schema.dump(all_tasks)
+
+        print(result)
+
+        return render_template("project.html",result=result, project=project)
+
+'''
+@app.route('/project/<int:project_id>')
+@login_required
+@check_confirmed
+def show_project(project_id):
+    project = Project.query.filter_by(id=project_id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+    if con is None:
         flash("This user is already colaborator", "danger")
         return redirect(url_for('index'))
     else:
@@ -370,6 +388,9 @@ def show_project(project_id):
                 done.append(i)
 
         return render_template("project.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project)
+
+'''
+
 
 @app.route('/add_task/<int:project_id>', methods=['GET', 'POST'])
 @login_required
