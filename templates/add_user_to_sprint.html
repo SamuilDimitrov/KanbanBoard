@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add Colab
+{% endblock %}
+
+{% block body %}
+
+<div style="width: 600px; margin: auto;">
+    <h2>Add colaborator to {{sprint.name}}</h2>
+    <input name="search" placeholder="Search Users Here....." type="text" id="tags">
+<div class="list-group" id="search_results"></div>
+</div>
+
+<script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    $(document).ready(function(){
+        $("input").on("input", function(){
+            // Clear Search Results Field
+            $("#search_results").empty();
+    
+            s_text = $("input[name='search']").val()
+            if (s_text.length < 1) return false;
+            // console.log($(this))
+            $.getJSON('http://localhost:5000/' + '/_livesearch', {
+                text: s_text,
+            }, function(data) {
+                // $("#search_results").text(data.result);
+                console.log(data)
+    
+                data.forEach(element => {
+                    console.log(element);
+                });
+                data = data.slice(0, 5);
+                console.log("After slice:")
+                console.log(data)
+    
+                data.forEach(element => {
+                    $("<a></a>").text(element.username).attr({
+                        href: '/invite_sprint' + '/{{ sprint.id }}/' + element.username,
+                        class: "list-group-item list-group-item-action",
+                    }).appendTo("#search_results");
+                });
+            });
+            return false;
+        });
+    });
+</script>
+{% endblock %}

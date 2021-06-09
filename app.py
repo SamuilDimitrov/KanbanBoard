@@ -36,7 +36,7 @@ login_manager.init_app(app)
 class TaskSchema(ma.Schema):
     class Meta:
         fields = ('id', 'project_id', 'taskname',
-                  'description', 'completedate', 'state')
+                  'description', 'completedate', 'state','importance')
 
 
 task_schema = TaskSchema()
@@ -46,7 +46,6 @@ tasks_schema = TaskSchema(many=True)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(login_id=user_id).first()
-
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -65,7 +64,7 @@ def invite(project_id,username):
         flash("There is no such user", "danger")
         return redirect(url_for('search_for_colaborator', project_id=project_id))
 
-    con = Connections.query.filter_by(project_id=project_id, user_id=user.id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project_id, user_id=user.id).first()
     if con:
         flash("This user is already colaborator", "danger")
         return redirect(url_for('search_for_colaborator', project_id=project_id))
@@ -77,6 +76,22 @@ def invite(project_id,username):
     mail.send(msg)
     flash('The invitation has been send.', 'success')
     return redirect(url_for('show_project', project_id=project_id))
+
+@app.route('/invite_sprint/<int:sprint_id>/<username>')
+@login_required
+@check_confirmed
+def invite_sprint(sprint_id,username):
+    sprint = Sprint.query.filter_by(id=sprint_id).first()
+    project = Project.query.filter_by(id=sprint.project_id).first()
+    user = User.query.filter_by(username=username).first()
+    conUP = Connections_User_Project().query.filter_by(user_id=user.id,project_id=project.id).first()
+    if conUP:
+        conSP = Connections_Sprint_User.query.filter_by(user_id=user.id,sprint_id=sprint.id).first()
+        if conSP:
+            new_conSP = Connections_Sprint_User(sprint_id=sprint.id, user_id=user.id)
+            db_session.add(new_conSP)
+            db_session.commit()
+
 
 @app.route('/check_invite/<token>')
 @login_required
@@ -141,6 +156,13 @@ def livesearch():
 
     return jsonify(result)
 
+@app.route("/sprint_serach_coll/<int:sprint_id>")
+@login_required
+@check_confirmed
+def sprint_serach_coll(sprint_id):
+    sprint = Sprint.query.filter_by(id=sprint_id).first()
+    return render_template("add_user_to_sprint.html",sprint=sprint)
+
 @app.route("/search_for_colaborator/<int:project_id>")
 @login_required
 @check_confirmed
@@ -197,7 +219,7 @@ def resend():
 
 def send_token(email):
     token = s.dumps(email, salt='email-confirm')
-    msg = Message('Confirm Email', sender='kanban.tues@abv.bg', recipients=[email])
+    msg = Message('Confirm Email', sender='nov_meil_tues@abv.bg', recipients=[email])
     link = url_for('confirm_email', token=token, _external=True)
     msg.body = 'Your link is {}'.format(link)
     mail.send(msg)
@@ -329,7 +351,7 @@ def create_project():
         db_session.add(project)
         db_session.commit()
 
-        conection = Connections(user_id=current_user.id, project_id=project.id)
+        conection = Connections_User_Project(user_id=current_user.id, project_id=project.id)
         db_session.add(conection)
         db_session.commit()
 
@@ -342,19 +364,50 @@ def create_project():
 @check_confirmed
 def show_project(project_id):
     project = Project.query.filter_by(id=project_id).first()
-    con = Connections.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
     if con is None:
-        flash("This user is already colaborator", "danger")
+        flash("You are not a colaborator to this porject", "danger")
         return redirect(url_for('index'))
     else:
-        all_tasks = Task.query.filter_by(project_id=project_id).all()
+        all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
+        result = tasks_schema.dump(all_tasks)
+        user_sprints = []
+        spirnts = Sprint.query.filter_by(project_id=project_id).all()
+        for i in spirnts:
+            is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
+            if is_connect:
+                user_sprints.append(i)
+        return render_template("project.html",result=result, project=project, spirnts=user_sprints)
+
+
+@app.route('/project_sprint/<int:project_id>/<int:sprint_id>')
+@login_required
+@check_confirmed
+def show_sprint(project_id,sprint_id):
+    sprint = Sprint.query.filter_by(id=sprint_id).first()
+    project = Project.query.filter_by(id=project_id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+
+    if con is None:
+        flash("You are not colaborator", "danger")
+        return redirect(url_for('index'))
+    if sprint.project_id != project_id:
+        flash("No such sprint", "danger")
+        return redirect(url_for('index'))
+    else:
+        all_tasks_con = Connections_Task_Sprint.query.filter_by(sprint_id=sprint_id).all()
+        all_tasks = []
+        for t in all_tasks_con:
+            task = Task.query.filter_by(id=t.task_id).first()
+            print("task = ")
+            print(task)
+            all_tasks.append(task)
         result = tasks_schema.dump(all_tasks)
 
         to_do = []
         progress = []
         testing = []
         done = []
-
         for i in result:
             if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
                 i['overdue'] = False
@@ -369,7 +422,50 @@ def show_project(project_id):
             else:
                 done.append(i)
 
-        return render_template("project.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project)
+        return render_template("board.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, sprint=sprint)
+
+@app.route('/create_sprint/<int:project_id>', methods=['GET', 'POST'])
+@login_required
+@check_confirmed
+def create_sprint(project_id):
+    if request.method == "POST":
+        project = Project.query.filter_by(id=project_id).first()
+        if project:
+            sprint_name = request.form["sprint_name"]
+            completedate = datetime.strptime(request.form['sprint_completedate'], '%Y-%m-%d')
+            sprint = Sprint(name=sprint_name,project_id=project_id,completedate=completedate)
+            db_session.add(sprint)
+            db_session.commit()
+
+            conection = Connections_Sprint_User(user_id=current_user.id, sprint_id=sprint.id)
+            db_session.add(conection)
+            db_session.commit()
+            flash("Sprint added successfully!","success")
+            return redirect(url_for('show_project', project_id=project_id))
+        else:
+            flash("Non such project","danger")
+            return redirect(url_for('index'))
+
+@app.route('/add_task_sprint/<task_id>/<project_id>', methods=['GET', 'POST'])
+@login_required
+@check_confirmed
+def add_task_sprint(task_id, project_id):
+    sprints = Sprint.query.filter_by(project_id=project_id).all()
+    if request.method == "POST":
+        sprint_name = request.form['sprint_name']
+        sprint = Sprint.query.filter_by(name=sprint_name).first()
+        if sprint:
+            scon = Connections_Task_Sprint.query.filter_by(task_id=task_id,sprint_id=sprint.id).first()
+            if scon:
+                flash("Task already in sprint", "success")
+                return redirect(url_for('show_project', project_id=project_id))
+            conection = Connections_Task_Sprint(task_id=task_id,sprint_id=sprint.id)
+            db_session.add(conection)
+            db_session.commit()
+            print("here")
+            flash("Task added to sprint", "success")
+        return redirect(url_for('show_project', project_id=project_id))
+    return render_template("add_task_sprint.html", sprints=sprints)
 
 @app.route('/add_task/<int:project_id>', methods=['GET', 'POST'])
 @login_required
@@ -391,15 +487,18 @@ def add_task(project_id):
 
     return redirect(url_for('show_project', project_id=project_id))
 
-@app.route('/move_task/<task_id>/<state>/<project_id>', methods=['GET'])
+@app.route('/move_task/<task_id>/<state>/<project_id>/<int:sprint_id>', methods=['GET'])
 @login_required
 @check_confirmed
-def move_task(task_id, state,project_id):
+def move_task(task_id, state, project_id, sprint_id):
     task = Task.query.get(task_id)
     task.state = state
 
     db_session.commit()
-    return redirect(url_for('show_project', project_id=project_id))
+    if sprint_id == 0:
+        print("TO-DO -----------------------------------------------------")
+    else:
+        return redirect(url_for('show_sprint', project_id=project_id,sprint_id=sprint_id))
 
 @app.route('/delete_task/<task_id>/<project_id>', methods=['GET'])
 @login_required
@@ -415,7 +514,7 @@ def delete_task(task_id, project_id):
 def index():
     if current_user.is_authenticated:
         if current_user.confirmed == 1:
-            con = Connections.query.filter_by(user_id = current_user.id).all()
+            con = Connections_User_Project.query.filter_by(user_id = current_user.id).all()
             projects = []
             for c in con:
                 projects += Project.query.filter_by(id = c.project_id).all()
