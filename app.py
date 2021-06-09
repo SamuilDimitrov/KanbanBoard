@@ -14,7 +14,8 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
 from decorators import check_confirmed
 from database import db_session, init_db
-from models import User, Project, Task, Connections
+from models import User, Project, Task, Categoryes, Board, Sprint
+from models import Connect_Categoryes, Connections_User_Project, Connections_User_Task, Connections_Sprint_User, Connections_Task_Sprint
 
 login_manager = LoginManager()
 
@@ -68,7 +69,7 @@ def invite(project_id,username):
     if con:
         flash("This user is already colaborator", "danger")
         return redirect(url_for('search_for_colaborator', project_id=project_id))
-    
+
     token = s.dumps([project_id,username], salt='add-col')
     msg = Message('Invitation', sender='kanban.tues@abv.bg', recipients=[user.email])
     link = url_for('check_invite', token=token, _external=True)
@@ -87,24 +88,24 @@ def check_invite(token):
     except SignatureExpired:
         flash('The link is invalid or has expired.', 'danger')
         return '<h1>The token is expired!</h1>'
-    
+
     user = User.query.filter_by(username=invite[1]).first()
     project = Project.query.filter_by(id=invite[0]).first()
     if user is None:
-        flash('user There has been an error pleas ask for new invite.', 'danger')
+        flash('user There has been an error please ask for new invite.', 'danger')
         return redirect(url_for('index'))
     if project is None:
-        flash('project There has been an error pleas ask for new invite.', 'danger')
+        flash('project There has been an error please ask for new invite.', 'danger')
         return redirect(url_for('index'))
 
-    con = Connections.query.filter_by(project_id=project.id, user_id=user.id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=user.id).first()
     if con:
-        flash("This user is already colaborator", "danger")
+        flash("You are already colaborator", "danger")
         return redirect(url_for('index'))
     if current_user.id != user.id:
         flash('The invitation is invalid because of not maching identities', 'danger')
         return redirect(url_for('index'))
-    conection = Connections(user_id=user.id, project_id=project.id)
+    conection = Connections_User_Project(user_id=user.id, project_id=project.id)
     db_session.add(conection)
     db_session.commit()
 
@@ -123,7 +124,7 @@ def livesearch():
     users = User.query.filter(User.username.like(search)).all()
 
     result = {user for user in users if user.id != current_user.id}
-    
+
     class JsonUser:
         def __init__(self, id, username, email, name):
             self.id = id
@@ -159,7 +160,7 @@ def register():
         password = request.form["password"]
         confirm_pasword = request.form["verify_password"]
         email = request.form["email"]
-        
+
         user = User.query.filter_by(username=username).first()
         if(user is not None):
             flash("This username already exists!", "danger")
@@ -171,7 +172,7 @@ def register():
 
         if confirm_pasword == password:
             user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=False)
-            
+
             send_token(email)
 
             db_session.add(user)
@@ -184,7 +185,7 @@ def register():
             return redirect(url_for('unconfirmed'))
             #return render_template("go_confirm.html", email = email)
         else:
-            
+
             flash("Passwords doesn`t match!","danger")
 
     return render_template("register.html")
@@ -221,13 +222,12 @@ def login():
 
 @app.route('/logout')
 @login_required
-@check_confirmed
 def logout():
     current_user.login_id = None
     db_session.commit()
     logout_user()
     return redirect(url_for('login'))
-    
+
 @app.route('/forgotPassword', methods=["GET", "POST"])
 def forgotPassword():
     if request.method == 'GET':
@@ -236,14 +236,13 @@ def forgotPassword():
         user = User.query.filter_by(email=request.form["email"]).first()
         subject = "Password reset requested"
         token = s.dumps(user.email, salt='recover-key')
-        
+
         msg = Message(subject, sender='kanban.tues@abv.bg', recipients=[user.email])
         link = url_for('reset_with_token', token=token, _external=True)
         msg.body = 'Your link is {}'.format(link)
         mail.send(msg)
         return render_template('check_email.html')
-        
-        
+
 @app.route('/reset/<token>', methods=["GET", "POST"])
 def reset_with_token(token):
     try:
@@ -265,24 +264,27 @@ def reset_with_token(token):
         return render_template("recover_password.html")
     return redirect(url_for('login'))
 
-
 @app.route('/confirm_email/<token>')
 @login_required
 def confirm_email(token):
     try:
         email = s.loads(token, salt='email-confirm', max_age=3600)
     except SignatureExpired:
+        email = s.loads(token, salt='email-confirm')
+        user = User.query.filter_by(email=email).first() 
+        db_session.delete(user)
+        db_session.commit()
         flash('The confirmation link is invalid or has expired.', 'danger')
         return '<h1>The token is expired!</h1>'
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first() 
     if user.confirmed:
         flash('Account already confirmed. Please login.', 'success')
     else:
         user.confirmed = True
         db_session.commit()
         flash('You have confirmed your account. Thanks!', 'success')
-    return redirect(url_for('index'))   
+    return redirect(url_for('index'))
 
 @app.route('/unconfirmed')
 @login_required
@@ -330,7 +332,7 @@ def create_project():
         conection = Connections(user_id=current_user.id, project_id=project.id)
         db_session.add(conection)
         db_session.commit()
-        
+
         flash("Project added successfully!","success")
         return redirect(url_for('index'))
     return render_template("create_project.html")
@@ -347,12 +349,12 @@ def show_project(project_id):
     else:
         all_tasks = Task.query.filter_by(project_id=project_id).all()
         result = tasks_schema.dump(all_tasks)
-        
+
         to_do = []
         progress = []
         testing = []
         done = []
-        
+
         for i in result:
             if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
                 i['overdue'] = False
@@ -366,7 +368,7 @@ def show_project(project_id):
                 testing.append(i)
             else:
                 done.append(i)
-                
+
         return render_template("project.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project)
 
 @app.route('/add_task/<int:project_id>', methods=['GET', 'POST'])
@@ -398,7 +400,6 @@ def move_task(task_id, state,project_id):
 
     db_session.commit()
     return redirect(url_for('show_project', project_id=project_id))
-
 
 @app.route('/delete_task/<task_id>/<project_id>', methods=['GET'])
 @login_required

@@ -12,33 +12,65 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
- 
+
     height:50vh;
     width:80vw;
  }
- 
- 
+
+
  #myModal {
      z-index: 2000;
  }
- 
+
   .addtask-button {
     margin-top: 20px;
   }
- 
+
   .center {
     text-align: center;
   }
- 
+
   .task-delete {
     display: none;
   }
+
+  /* Style the search box inside the navigation bar */
+  .topnav input[type=text] {
+    float: right;
+    padding: 6px;
+    border: none;
+    margin-top: 8px;
+    margin-right: 16px;
+    font-size: 17px;
+  }
+
 </style>
 
 {% endblock %}
 
 {% block body %}
-<div style="margin-left: 50px;" class="row">
+<div style="margin-left: 50px; margin-right: 50px; margin-top: 10px;" class="search-container">
+    <form method="POST">
+        <input type="text" placeholder="Search in tasks... "name="search">
+        <button type="submit">Submit</button>
+    </form>
+</div>
+<div class="row">
+    <div class="col center">
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
+            data-target="#myModal">Add Task</button>
+    </div>
+    {% if current_user.id == project.admin_id %}
+    <div class="col center">
+        <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
+    </div>
+    {% endif %}
+    <div class="col center">
+        <button style="float: left; font-family: Verdana;" type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
+            onclick="show_all();">Delete</button>
+    </div>
+</div>
+<div style="margin-left: 50px; margin-right: 50px;" class="row">
     <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
         <div class="card-header">
             <p style="margin-left: 35%; margin-top: 8%; font-size: 20px;"> To Do</p>
@@ -181,21 +213,6 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="row" style="width:26%;">
-        <div class="col center">
-            <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
-                data-target="#myModal">Add Task</button>
-        </div>
-        {% if current_user.id == project.admin_id %}
-            <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-primary btn-block btn-lg mt-2">Add Colaborator</button></a>
-        {% endif %}
-        <div class="col center">
-            <button style="float: left; font-family: Verdana;" type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
-                onclick="show_all();">Delete</button>
-        </div>
-    </div>
-
-</div>
 </div>
 
 <div id="myModal" class="modal fade" role="dialog">
@@ -222,18 +239,39 @@
                     </div>
                     <div class="form-group">
                         <label for="taskcategory">Category</label>
-                        <select class="form-control" id="taskcategory" name="taskcategory">
+                        <select class="form-control" id="taskcategory" name="taskcategory" required>
                             <option>TO DO</option>
                             <option>PROGRESS</option>
                             <option>TESTING</option>
                             <option>DONE</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="tastechnologies">Technologies</label>
+                        <select multiple class="form-control" id="tasktechnologies" name="tasktechnologies" required>
+                            <option>JAVA</option>
+                            <option>C++</option>
+                            <option>C#</option>
+                            <option>C object</option>
+                            <option>C</option>
+                            <option>Python</option>
+                            <option>Ruby</option>
+                            <option>JavaScript</option>
+                            <option>HTML</option>
+                            <option>PHP</option>
+                      </select>
+                      <p>Press CTRL and click above button to select multiple options at once.</p>
+                      <script>
+                          function multipleFunc() {
+                              document.getElementById("tasktechnologies").multiple = true;
+                          }
+                      </script>
+                    </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
             </div>
         </div>
-        
+
     </div>
 </div>
 <script>
