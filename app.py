@@ -354,25 +354,35 @@ def show_project(project_id):
 
         return render_template("project.html",result=result, project=project)
 
-'''
-@app.route('/project/<int:project_id>')
+
+@app.route('/project_sprint/<int:project_id>/<int:sprint_id>')
 @login_required
 @check_confirmed
-def show_project(project_id):
+def show_sprint(project_id,sprint_id):
+    sprint = Sprint.query.filter_by(id=sprint_id).first()
     project = Project.query.filter_by(id=project_id).first()
     con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+
     if con is None:
-        flash("This user is already colaborator", "danger")
+        flash("You are not colaborator", "danger")
+        return redirect(url_for('index'))
+    if sprint.project_id != project_id:
+        flash("No such sprint", "danger")
         return redirect(url_for('index'))
     else:
-        all_tasks = Task.query.filter_by(project_id=project_id).all()
+        all_tasks_con = Connections_Task_Sprint.query.filter_by(sprint_id=sprint_id).all()
+        all_tasks = []
+        for t in all_tasks_con:
+            task = Task.query.filter_by(id=t.task_id).first()
+            print("task = ")
+            print(task)
+            all_tasks.append(task)
         result = tasks_schema.dump(all_tasks)
 
         to_do = []
         progress = []
         testing = []
         done = []
-
         for i in result:
             if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
                 i['overdue'] = False
@@ -387,10 +397,50 @@ def show_project(project_id):
             else:
                 done.append(i)
 
-        return render_template("project.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project)
+        return render_template("board.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, sprint=sprint)
 
-'''
+@app.route('/create_sprint/<int:project_id>', methods=['GET', 'POST'])
+@login_required
+@check_confirmed
+def create_sprint(project_id):
+    if request.method == "POST":
+        project = Project.query.filter_by(id=project_id).first()
+        if project:
+            sprint_name = request.form["sprint_name"]
+            completedate = datetime.strptime(request.form['sprint_completedate'], '%Y-%m-%d')
+            sprint = Sprint(name=sprint_name,project_id=project_id,completedate=completedate)
+            db_session.add(sprint)
+            db_session.commit()
 
+            conection = Connections_Sprint_User(user_id=current_user.id, sprint_id=sprint.id)
+            db_session.add(conection)
+            db_session.commit()
+            flash("Sprint added successfully!","success")
+            return redirect(url_for('show_project', project_id=project_id))
+        else:
+            flash("Non such project","danger")
+            return redirect(url_for('index'))
+
+@app.route('/add_task_sprint/<task_id>/<project_id>', methods=['GET', 'POST'])
+@login_required
+@check_confirmed
+def add_task_sprint(task_id, project_id):
+    sprints = Sprint.query.filter_by(project_id=project_id).all()
+    if request.method == "POST":
+        sprint_name = request.form['sprint_name']
+        sprint = Sprint.query.filter_by(name=sprint_name).first()
+        if sprint:
+            scon = Connections_Task_Sprint.query.filter_by(task_id=task_id,sprint_id=sprint.id).first()
+            if scon:
+                flash("Task already in sprint", "success")
+                return redirect(url_for('show_project', project_id=project_id))
+            conection = Connections_Task_Sprint(task_id=task_id,sprint_id=sprint.id)
+            db_session.add(conection)
+            db_session.commit()
+            print("here")
+            flash("Task added to sprint", "success")
+        return redirect(url_for('show_project', project_id=project_id))
+    return render_template("add_task_sprint.html", sprints=sprints)
 
 @app.route('/add_task/<int:project_id>', methods=['GET', 'POST'])
 @login_required
@@ -412,15 +462,18 @@ def add_task(project_id):
 
     return redirect(url_for('show_project', project_id=project_id))
 
-@app.route('/move_task/<task_id>/<state>/<project_id>', methods=['GET'])
+@app.route('/move_task/<task_id>/<state>/<project_id>/<int:sprint_id>', methods=['GET'])
 @login_required
 @check_confirmed
-def move_task(task_id, state,project_id):
+def move_task(task_id, state, project_id, sprint_id):
     task = Task.query.get(task_id)
     task.state = state
 
     db_session.commit()
-    return redirect(url_for('show_project', project_id=project_id))
+    if sprint_id == 0:
+        print("TO-DO -----------------------------------------------------")
+    else:
+        return redirect(url_for('show_sprint', project_id=project_id,sprint_id=sprint_id))
 
 @app.route('/delete_task/<task_id>/<project_id>', methods=['GET'])
 @login_required

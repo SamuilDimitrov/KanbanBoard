@@ -60,6 +60,10 @@
         <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
             data-target="#myModal">Add Task</button>
     </div>
+    <div class="col center">
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
+            data-target="#Sprint">Create Sprint</button>
+    </div>
     {% if current_user.id == project.admin_id %}
     <div class="col center">
         <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
@@ -92,150 +96,17 @@
                 </div>
                 <div class="row">
                     <div class="col center">
+                        <a class="add-task-sprint" href="{{url_for('add_task_sprint', task_id=todo['id'], project_id=project.id)}}">Add to sprint</a>
                     </div>
                     <div class="col center">
-                        <a class="task-delete" href="{{ url_for('delete_task', task_id=todo['id'], project_id=project.id)}}">delete</a>
+                        <a class="task-delete" href="{{ url_for('add_task', task_id=todo['id'], project_id=project.id)}}">delete</a>
                     </div>
                 </div>
             </li>
             {% endfor %}
-            <!-- {% for todo in update_todo %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col">
-                        <span style="float:left">{{todo['taskname']}}</span>
-                        <span style="float:right">
-                            {% if todo['overdue'] %}
-                            <p style="color:red">{{todo['completedate'][:10]}}</p>
-                            {% else %}
-                            <p style="color:blue">{{todo['completedate'][:10]}}</p>
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col center">
-                    </div>
-                    <div class="col center">
-                        <a class="task-delete" href="{{ url_for('delete_task', task_id=todo['id'], project_id=project.id)}}">delete</a>
-                    </div>
-                    <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=todo['id'], state='PROGRESS', project_id=project.id) }}">&#8594;</a>
-                    </div>
-                </div>
-            </li>
-            {% endfor %} -->
+            
         </ul>
     </div>
-    <!-- <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
-        <div style="font-size: 15px;" class="card-header">
-            <p style="margin-left: 27%; margin-top: 8%; font-size: 20px;"> In Progress </p>
-        </div>
-        <ul class="list-group list-group-flush">
-            {% for progress in update_progress %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col">
-                        <span style="float:left">
-                            {{progress['taskname']}}
-                        </span>
-                        <span style="float:right">
-                            {% if progress['overdue'] %}
-                            <p style="color:red">{{progress['completedate'][:10]}}</p>
-                            {% else %}
-                            <p style="color:blue">{{progress['completedate'][:10]}}</p>
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=progress['id'], state='TO DO', project_id=project.id)}}">&#8592;</a>
-                    </div>
-                    <div class="col center">
-                        <a class="task-delete" href="{{ url_for('delete_task', task_id=progress['id'], project_id=project.id)}}" >delete</a>
-                    </div>
-                    <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=progress['id'], state='TESTING', project_id=project.id) }}">&#8594;</a>
-                    </div>
-                </div>
-            </li>
-
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
-        <div class="card-header">
-            <p style="margin-left: 35%; margin-top: 8%; font-size: 20px;"> Testing </p>
-        </div>
-        <ul class="list-group list-group-flush">
-            {% for testing in update_testing %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col">
-                        <span style="float:left">
-                            {{testing['taskname']}}
-                        </span>
-                        <span style="float:right">
-                            {% if testing['overdue'] %}
-                            <p style="color:red">{{testing['completedate'][:10]}}</p>
-                            {% else %}
-                            <p style="color:blue">{{testing['completedate'][:10]}}</p>
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=testing['id'], state='PROGRESS', project_id=project.id) }}">&#8592;</a>
-                    </div>
-                    <div class="col center">
-                        <a class="task-delete" href="{{ url_for('delete_task', task_id=testing['id'], project_id=project.id)}}">delete</a>
-                    </div>
-                    <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=testing['id'], state='DONE', project_id=project.id) }}">&#8594;</a>
-                    </div>
-                </div>
-            </li>
-
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
-        <div class="card-header">
-            <p style="margin-left: 37%; margin-top: 8%; font-size: 20px;"> Done </p>
-        </div>
-        <ul class="list-group list-group-flush">
-            {% for done in update_done %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col">
-                        <span style="float:left">
-                            {{done['taskname']}}
-                        </span>
-                        <span style="float:right">
-                            {% if done['overdue'] %}
-                            <p style="color:red">{{done['completedate'][:10]}}</p>
-                            {% else %}
-                            <p style="color:blue">{{done['completedate'][:10]}}</p>
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=done['id'], state='TESTING' ,project_id=project.id) }}">&#8592;</a>
-                    </div>
-                    <div class="col center">
-                        <a class="task-delete" href="{{ url_for('delete_task', task_id=done['id'], project_id=project.id)}}">delete</a>
-                    </div>
-                    <div class="col center">
-                    </div>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div> -->
 </div>
 
 <div id="myModal" class="modal fade" role="dialog">
@@ -297,6 +168,33 @@
 
     </div>
 </div>
+
+<div id="Sprint" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="float:left;">create Sprint</h4>
+                <button type="button" class="close" data-dismiss="modal" style="float:right">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{url_for('create_sprint', project_id=project.id)}}">
+                    <div class="form-group">
+                        <label for="sprint_name">Sprint Name</label>
+                        <input type="text" class="form-control" id="sprint_name" name="sprint_name" placeholder="Enter task" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sprint_completedate">Date</label>
+                        <input class="form-control" type="date" id="sprint_completedate" name="sprint_completedate" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
     function show_all(){
       var arrayOfElements=document.getElementsByClassName('task-delete');
