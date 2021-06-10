@@ -55,6 +55,19 @@
         <button type="submit">Submit</button>
     </form>
 </div>
+
+<div style="margin-left: 50px; margin-right: 50px; margin-top: 10px;" class="dropdown">
+    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Sprints
+    </a>
+  
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        {% for sprint in spirnts %}
+            <a class="dropdown-item" href="{{url_for('show_sprint',project_id=project.id,sprint_id=sprint.id)}}">{{sprint.name}}</a>
+        {% endfor %}
+    </div>
+  </div>
+
 <div class="row">
     <div class="col center">
         <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"

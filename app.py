@@ -349,10 +349,17 @@ def show_project(project_id):
     else:
         all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
         result = tasks_schema.dump(all_tasks)
-
-        print(result)
-
-        return render_template("project.html",result=result, project=project)
+        user_sprints = []
+        spirnts = Sprint.query.filter_by(project_id=project_id).all()
+        for i in spirnts:
+            is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
+            if is_connect:
+                print("current_user.id = ")
+                print(current_user.id)
+                print("i.id = ")
+                print(i.id)
+                user_sprints.append(i)
+        return render_template("project.html",result=result, project=project, spirnts=user_sprints)
 
 
 @app.route('/project_sprint/<int:project_id>/<int:sprint_id>')
