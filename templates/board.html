@@ -49,13 +49,10 @@
 {% endblock %}
 
 {% block body %}
-<div style="margin-left: 50px; margin-right: 50px; margin-top: 10px;" class="search-container">
-    <form method="POST">
-        <input type="text" placeholder="Search in tasks... "name="search">
-        <button type="submit">Submit</button>
-    </form>
-</div>
 <div class="row">
+    <div class="col center">
+        <a href="{{url_for('sprint_serach_coll',sprint_id=sprint.id)}}"><button  class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
+    </div>
     <div class="col center">
         <button style="float: font-family Verdana;" type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
             onclick="show_all();">Delete</button>
@@ -183,9 +180,9 @@
                         </span>
                         <span style="float:right">
                             {% if done['overdue'] %}
-                            <p style="color:red">{{done['completedate'][:10]}}</p>
+                            <p style="color:green">{{done['completedate'][:10]}}</p>
                             {% else %}
-                            <p style="color:blue">{{done['completedate'][:10]}}</p>
+                            <p style="color:green">{{done['completedate'][:10]}}</p>
                             {% endif %}
                         </span>
                     </div>

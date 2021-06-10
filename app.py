@@ -47,7 +47,6 @@ tasks_schema = TaskSchema(many=True)
 def load_user(user_id):
     return User.query.filter_by(login_id=user_id).first()
 
-
 @login_manager.unauthorized_handler
 def unauthorized():
     return redirect(url_for('login'))
@@ -65,7 +64,7 @@ def invite(project_id,username):
         flash("There is no such user", "danger")
         return redirect(url_for('search_for_colaborator', project_id=project_id))
 
-    con = Connections.query.filter_by(project_id=project_id, user_id=user.id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project_id, user_id=user.id).first()
     if con:
         flash("This user is already colaborator", "danger")
         return redirect(url_for('search_for_colaborator', project_id=project_id))
@@ -77,6 +76,22 @@ def invite(project_id,username):
     mail.send(msg)
     flash('The invitation has been send.', 'success')
     return redirect(url_for('show_project', project_id=project_id))
+
+@app.route('/invite_sprint/<int:sprint_id>/<username>')
+@login_required
+@check_confirmed
+def invite_sprint(sprint_id,username):
+    sprint = Sprint.query.filter_by(id=sprint_id).first()
+    project = Project.query.filter_by(id=sprint.project_id).first()
+    user = User.query.filter_by(username=username).first()
+    conUP = Connections_User_Project().query.filter_by(user_id=user.id,project_id=project.id).first()
+    if conUP:
+        conSP = Connections_Sprint_User.query.filter_by(user_id=user.id,sprint_id=sprint.id).first()
+        if conSP:
+            new_conSP = Connections_Sprint_User(sprint_id=sprint.id, user_id=user.id)
+            db_session.add(new_conSP)
+            db_session.commit()
+
 
 @app.route('/check_invite/<token>')
 @login_required
@@ -141,6 +156,13 @@ def livesearch():
 
     return jsonify(result)
 
+@app.route("/sprint_serach_coll/<int:sprint_id>")
+@login_required
+@check_confirmed
+def sprint_serach_coll(sprint_id):
+    sprint = Sprint.query.filter_by(id=sprint_id).first()
+    return render_template("add_user_to_sprint.html",sprint=sprint)
+
 @app.route("/search_for_colaborator/<int:project_id>")
 @login_required
 @check_confirmed
@@ -171,9 +193,9 @@ def register():
             return render_template("register.html")
 
         if confirm_pasword == password:
-            user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=True)
+            user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=False)
 
-            #send_token(email)
+            send_token(email)
 
             db_session.add(user)
             db_session.commit()
@@ -197,7 +219,7 @@ def resend():
 
 def send_token(email):
     token = s.dumps(email, salt='email-confirm')
-    msg = Message('Confirm Email', sender='kanban.tues@abv.bg', recipients=[email])
+    msg = Message('Confirm Email', sender='nov_meil_tues@abv.bg', recipients=[email])
     link = url_for('confirm_email', token=token, _external=True)
     msg.body = 'Your link is {}'.format(link)
     mail.send(msg)
@@ -354,10 +376,6 @@ def show_project(project_id):
         for i in spirnts:
             is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
             if is_connect:
-                print("current_user.id = ")
-                print(current_user.id)
-                print("i.id = ")
-                print(i.id)
                 user_sprints.append(i)
         return render_template("project.html",result=result, project=project, spirnts=user_sprints)
 
