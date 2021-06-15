@@ -49,18 +49,12 @@
 {% endblock %}
 
 {% block body %}
-<div style="margin-left: 50px; margin-right: 50px; margin-top: 10px;" class="search-container">
-    <form method="POST">
-        <input type="text" placeholder="Search in tasks... "name="search">
-        <button type="submit">Submit</button>
-    </form>
-</div>
 
 <div style="margin-left: 50px; margin-right: 50px; margin-top: 10px;" class="dropdown">
     <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       Sprints
     </a>
-  
+
     <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
         {% for sprint in spirnts %}
             <a class="dropdown-item" href="{{url_for('show_sprint',project_id=project.id,sprint_id=sprint.id)}}">{{sprint.name}}</a>
@@ -117,7 +111,7 @@
                 </div>
             </li>
             {% endfor %}
-            
+
         </ul>
     </div>
 </div>
@@ -145,34 +139,33 @@
                         <input class="form-control" type="date" id="completedate" name="completedate" required>
                     </div>
                     <div class="form-group">
-                        <label for="taskcategory">Category</label>
-                        <select class="form-control" id="taskcategory" name="taskcategory" required>
-                            <option>TO DO</option>
-                            <option>PROGRESS</option>
-                            <option>TESTING</option>
-                            <option>DONE</option>
+                        <label for="taskstate">State</label>
+                        <select class="form-control" id="state" name="taskstate" required>
+                            <option value="TO DO">TO DO</option>
+                            <option value="PROGRESS">PROGRESS</option>
+                            <option value="TESTING">TESTING</option>
+                            <option value="DONE">DONE</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="tastechnologies">Technologies</label>
-                        <select multiple class="form-control" id="tasktechnologies" name="tasktechnologies" required>
-                            <option>JAVA</option>
-                            <option>C++</option>
-                            <option>C#</option>
-                            <option>C object</option>
-                            <option>C</option>
-                            <option>Python</option>
-                            <option>Ruby</option>
-                            <option>JavaScript</option>
-                            <option>HTML</option>
-                            <option>PHP</option>
+                      <label for="importance">Importance</label>
+                      <select class="form-control" id="importance" name="importance" required>
+                        <option value="P0">P0</option>
+                        <option value="P1">P1</option>
+                        <option value="P2">P2</option>
+                        <option value="P3">P3</option>
+                        <option value="P4">P4</option>
                       </select>
-                      <p>Press CTRL and click above button to select multiple options at once.</p>
-                      <script>
-                          function multipleFunc() {
-                              document.getElementById("tasktechnologies").multiple = true;
-                          }
-                      </script>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select multiple class="form-control" id="category" name="category" required>
+                            <option value="Add feature">Add feature</option>
+                            <option value="Bug fix">Bug fix</option>
+                            <option value="Speed improvement">Speed improvement</option>
+                            <option value="Tests">Tests</option>
+                            <option value="Other">Other</option>
+                      </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -206,7 +199,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     function show_all(){
