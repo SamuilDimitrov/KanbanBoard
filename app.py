@@ -423,7 +423,7 @@ def show_sprint(project_id,sprint_id):
             else:
                 done.append(i)
 
-        return render_template("board.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, sprint=sprint)
+        return render_template("sprint.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, sprint=sprint)
 
 @app.route('/create_sprint/<int:project_id>', methods=['GET', 'POST'])
 @login_required
