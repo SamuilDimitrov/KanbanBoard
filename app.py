@@ -530,8 +530,8 @@ def add_task(project_id):
     description = request.form['description']
     completedate = datetime.strptime(request.form['completedate'], '%Y-%m-%d')
     taskstate = request.form['taskstate']
-
-    new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate)
+    importance = request.form['importance']
+    new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate, importance=importance)
 
     db_session.add(new_task)
     db_session.commit()
