@@ -42,9 +42,9 @@ class Task(Base):
     project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
     taskname = Column(String(1000), nullable=False)
     description = Column(String(1000), nullable=True)
-    completedate = Column(DateTime)
-    state = Column(Enum('TO DO','PROGRESS','TESTING','DONE'))
-    importance = Column(Enum('P0','P1','P2','P3','P4'))
+    completedate = Column(DateTime, nullable=True)
+    state = Column(Enum('TO DO','PROGRESS','TESTING','DONE'), nullable=True)
+    importance = Column(Enum('P0','P1','P2','P3','P4'), nullable=True)
 
 class Board(Base):
     __tablename__ = 'board'

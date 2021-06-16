@@ -1,7 +1,10 @@
+from typing import Text
 import uuid
 import os
 
 from flask import Flask, request, render_template, redirect, make_response, url_for, session, flash, make_response, jsonify
+from sqlalchemy.sql.expression import false
+from sqlalchemy.sql.functions import user
 from flask_login import login_user, login_required, current_user, logout_user
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -37,7 +40,6 @@ class TaskSchema(ma.Schema):
     class Meta:
         fields = ('id', 'project_id', 'taskname',
                   'description', 'completedate', 'state','importance')
-
 
 task_schema = TaskSchema()
 tasks_schema = TaskSchema(many=True)
@@ -87,11 +89,11 @@ def invite_sprint(sprint_id,username):
     conUP = Connections_User_Project().query.filter_by(user_id=user.id,project_id=project.id).first()
     if conUP:
         conSP = Connections_Sprint_User.query.filter_by(user_id=user.id,sprint_id=sprint.id).first()
-        if conSP:
+        if not conSP:
             new_conSP = Connections_Sprint_User(sprint_id=sprint.id, user_id=user.id)
             db_session.add(new_conSP)
             db_session.commit()
-
+    return redirect(url_for('show_sprint', project_id=project.id,sprint_id=sprint.id))
 
 @app.route('/check_invite/<token>')
 @login_required
@@ -126,7 +128,6 @@ def check_invite(token):
 
     flash("You have been added as colaborator", "success")
     return redirect(url_for('index'))
-
 
 @app.route('/_livesearch')
 @login_required
@@ -193,9 +194,9 @@ def register():
             return render_template("register.html")
 
         if confirm_pasword == password:
-            user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=False)
+            user = User(username=username, password=generate_password_hash(password), email=email, name=name, confirmed=True)
 
-            send_token(email)
+            #send_token(email)
 
             db_session.add(user)
             db_session.commit()
@@ -369,17 +370,66 @@ def show_project(project_id):
         flash("You are not a colaborator to this porject", "danger")
         return redirect(url_for('index'))
     else:
+        assigned = {}
+        conUT ={}
+        user_sprints = []
+
         all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
         result = tasks_schema.dump(all_tasks)
-        user_sprints = []
+        
+        for i in all_tasks:
+            connection = Connections_User_Task.query.filter_by(task_id=i.id).all()
+            names = []
+            user_id = []
+            for conn in connection:
+                user_id.append(conn.user_id)
+            for u in user_id:
+                user = User.query.filter_by(id=u).first()
+                names.append(user.username)
+            assigned[i.id] = names
+            c = Connections_User_Task.query.filter_by(task_id=i.id, user_id=current_user.id).first()
+            if c:
+                conUT[i.id] = False
+            else:
+                conUT[i.id] = True
+        
         spirnts = Sprint.query.filter_by(project_id=project_id).all()
         for i in spirnts:
             is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
             if is_connect:
                 user_sprints.append(i)
-        return render_template("project.html",result=result, project=project, spirnts=user_sprints)
+        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=conUT, assigned=assigned)
 
-#test
+@app.route('/assign_task/<int:task_id>')
+@login_required
+@check_confirmed
+def assign_task(task_id):
+    task = Task.query.filter_by(id=task_id).first()
+    project = Project.query.filter_by(id=task.project_id).first()
+    conUP = Connections_User_Project().query.filter_by(user_id=current_user.id,project_id=project.id).first()
+    if conUP:
+        conection = Connections_User_Task(task_id=task.id, user_id=current_user.id)
+        db_session.add(conection)
+        db_session.commit()
+        flash("Task assigned", "success")
+        return redirect(url_for('show_project', project_id=project.id))
+    flash("Task not assigned", "danger")
+    return redirect(url_for('index'))
+
+@app.route('/unassign_task/<int:task_id>')
+@login_required
+@check_confirmed
+def unassign_task(task_id):
+    task = Task.query.filter_by(id=task_id).first()
+    project = Project.query.filter_by(id=task.project_id).first()
+    conUP = Connections_User_Task().query.filter_by(user_id=current_user.id, task_id=task_id).first()
+    if conUP:
+        db_session.delete(conUP)
+        db_session.commit()
+        flash("Task unassigned", "success")
+        return redirect(url_for('show_project', project_id=project.id))
+    flash("Error", "danger")
+    return redirect(url_for('index'))
 
 @app.route('/project_sprint/<int:project_id>/<int:sprint_id>')
 @login_required
@@ -479,7 +529,7 @@ def add_task(project_id):
     taskname = request.form['taskname']
     description = request.form['description']
     completedate = datetime.strptime(request.form['completedate'], '%Y-%m-%d')
-    taskstate = request.form['taskcategory']
+    taskstate = request.form['taskstate']
 
     new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate)
 

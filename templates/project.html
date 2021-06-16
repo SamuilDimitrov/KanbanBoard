@@ -8,42 +8,41 @@
 {% block head %}
 <style>
     .middle_box {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
 
-    height:50vh;
-    width:80vw;
- }
+        height: 50vh;
+        width: 80vw;
+    }
 
 
- #myModal {
-     z-index: 2000;
- }
+    #myModal {
+        z-index: 2000;
+    }
 
-  .addtask-button {
-    margin-top: 20px;
-  }
+    .addtask-button {
+        margin-top: 20px;
+    }
 
-  .center {
-    text-align: center;
-  }
+    .center {
+        text-align: center;
+    }
 
-  .task-delete {
-    display: none;
-  }
+    .task-delete {
+        display: none;
+    }
 
-  /* Style the search box inside the navigation bar */
-  .topnav input[type=text] {
-    float: right;
-    padding: 6px;
-    border: none;
-    margin-top: 8px;
-    margin-right: 16px;
-    font-size: 17px;
-  }
-
+    /* Style the search box inside the navigation bar */
+    .topnav input[type=text] {
+        float: right;
+        padding: 6px;
+        border: none;
+        margin-top: 8px;
+        margin-right: 16px;
+        font-size: 17px;
+    }
 </style>
 
 {% endblock %}
@@ -51,62 +50,87 @@
 {% block body %}
 
 <div style="margin-left: 50px; margin-right: 50px; margin-top: 10px;" class="dropdown">
-    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      Sprints
+    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+        Sprints
     </a>
-
     <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
         {% for sprint in spirnts %}
-            <a class="dropdown-item" href="{{url_for('show_sprint',project_id=project.id,sprint_id=sprint.id)}}">{{sprint.name}}</a>
+        <a class="dropdown-item"
+            href="{{url_for('show_sprint',project_id=project.id,sprint_id=sprint.id)}}">{{sprint.name}}</a>
         {% endfor %}
     </div>
-  </div>
+</div>
 
 <div class="row">
     <div class="col center">
-        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
-            data-target="#myModal">Add Task</button>
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button"
+            data-toggle="modal" data-target="#myModal">Add Task</button>
     </div>
     <div class="col center">
-        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button" data-toggle="modal"
-            data-target="#Sprint">Create Sprint</button>
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button"
+            data-toggle="modal" data-target="#Sprint">Create Sprint</button>
     </div>
     {% if current_user.id == project.admin_id %}
     <div class="col center">
-        <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button  class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
+        <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button
+                class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
     </div>
     {% endif %}
     <div class="col center">
-        <button style="float: left; font-family: Verdana;" type="button" id="delete-button" class="btn btn-danger btn-lg addtask-button"
-            onclick="show_all();">Delete</button>
+        <button style="float: left; font-family: Verdana;" type="button" id="delete-button"
+            class="btn btn-danger btn-lg addtask-button" onclick="show_all();">Delete</button>
     </div>
 </div>
 <div style="margin-left: 50px; margin-right: 50px;" class="row">
-    <div class="card col" style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
+    <div class="card col"
+        style="position: relative; border-radius: 0% 0% 0% 0% / 0% 0% 0% 0%; box-shadow: 20px 20px rgba(0,0,0,.15); transition: all .4s ease; margin: 15px;">
         <div class="card-header">
             <p style="margin-top: 8%; font-size: 20px;"> Tasks</p>
         </div>
         <ul class="list-group list-group-flush">
-            {% for todo in result %}
+            {% for curr_task in result %}
             <li class="list-group-item">
                 <div class="row">
                     <div class="col">
-                        <span style="float:left">{{todo['taskname']}}</span>
+                        <span style="float:left">{{curr_task['taskname']}}</span>
                         <span style="float:right">
-                            {% if todo['overdue'] %}
-                            <p style="color:red">{{todo['completedate'][:10]}}</p>
+                            {% if curr_task['overdue'] %}
+                            <p style="color:red">{{curr_task['completedate'][:10]}}</p>
                             {% else %}
-                            <p style="color:blue">{{todo['completedate'][:10]}}</p>
+                            <p style="color:blue">{{curr_task['completedate'][:10]}}</p>
                             {% endif %}
                         </span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col center">
-                        <a class="add-task-sprint" href="{{url_for('add_task_sprint', task_id=todo['id'], project_id=project.id)}}">Add to sprint</a>
+                        <a class="add-task-sprint"
+                            href="{{url_for('add_task_sprint', task_id=curr_task['id'], project_id=project.id)}}">Add to
+                            sprint</a>
                     </div>
                     <div class="col center">
-                        <a class="task-delete" href="{{ url_for('add_task', task_id=todo['id'], project_id=project.id)}}">delete</a>
+                        {% if conUT[curr_task['id']] %}
+                        <a class="assign" href="{{ url_for('assign_task', task_id=curr_task['id'])}}">assign</a>
+                        {% else %}
+                        <a class="unassign" href="{{ url_for('unassign_task', task_id=curr_task['id'])}}">unassign</a>
+                        {% endif %}
+                    </div>
+                    <div class="col center">
+                        <a class="task-delete"
+                            href="{{ url_for('add_task', task_id=curr_task['id'], project_id=project.id)}}">delete</a>
+                    </div>
+                    <div class="col center">
+                        Assigned to:
+                        {% if not assigned[curr_task['id']] %}
+                            <p>No one</p>
+                        {% else %}
+                            <p id="test" data-toggle="tooltip">
+                            {% for name in assigned[curr_task['id']] %}
+                                {{name}}
+                            {% endfor %}
+                            </p>
+                        {% endif %}
                     </div>
                 </div>
             </li>
@@ -128,11 +152,13 @@
                 <form method="post" action="{{url_for('add_task', project_id=project.id)}}">
                     <div class="form-group">
                         <label for="taskname">Task Name</label>
-                        <input type="text" class="form-control" id="taskname" name="taskname" placeholder="Enter task" required>
+                        <input type="text" class="form-control" id="taskname" name="taskname" placeholder="Enter task"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="taskname">Task Description</label>
-                        <input type="text" class="form-control" id="taskname" name="description" placeholder="Enter description">
+                        <input type="text" class="form-control" id="taskname" name="description"
+                            placeholder="Enter description">
                     </div>
                     <div class="form-group">
                         <label for="completedate">Date</label>
@@ -148,14 +174,14 @@
                         </select>
                     </div>
                     <div class="form-group">
-                      <label for="importance">Importance</label>
-                      <select class="form-control" id="importance" name="importance" required>
-                        <option value="P0">P0</option>
-                        <option value="P1">P1</option>
-                        <option value="P2">P2</option>
-                        <option value="P3">P3</option>
-                        <option value="P4">P4</option>
-                      </select>
+                        <label for="importance">Importance</label>
+                        <select class="form-control" id="importance" name="importance" required>
+                            <option value="P0">P0</option>
+                            <option value="P1">P1</option>
+                            <option value="P2">P2</option>
+                            <option value="P3">P3</option>
+                            <option value="P4">P4</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="category">Category</label>
@@ -165,7 +191,7 @@
                             <option value="Speed improvement">Speed improvement</option>
                             <option value="Tests">Tests</option>
                             <option value="Other">Other</option>
-                      </select>
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -187,11 +213,13 @@
                 <form method="post" action="{{url_for('create_sprint', project_id=project.id)}}">
                     <div class="form-group">
                         <label for="sprint_name">Sprint Name</label>
-                        <input type="text" class="form-control" id="sprint_name" name="sprint_name" placeholder="Enter task" required>
+                        <input type="text" class="form-control" id="sprint_name" name="sprint_name"
+                            placeholder="Enter task" required>
                     </div>
                     <div class="form-group">
                         <label for="sprint_completedate">Date</label>
-                        <input class="form-control" type="date" id="sprint_completedate" name="sprint_completedate" required>
+                        <input class="form-control" type="date" id="sprint_completedate" name="sprint_completedate"
+                            required>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -201,26 +229,37 @@
 </div>
 
 <script>
-    function show_all(){
-      var arrayOfElements=document.getElementsByClassName('task-delete');
-      var lengthOfArray=arrayOfElements.length;
+    function show_all() {
+        var arrayOfElements = document.getElementsByClassName('task-delete');
+        var lengthOfArray = arrayOfElements.length;
 
-      for (var i=0; i<lengthOfArray;i++){
-          arrayOfElements[i].style.display='inline';
-      }
+        for (var i = 0; i < lengthOfArray; i++) {
+            arrayOfElements[i].style.display = 'inline';
+        }
 
-      document.getElementById('delete-button').onclick = hide_all;
+        document.getElementById('delete-button').onclick = hide_all;
     }
 
-    function hide_all(){
-      var arrayOfElements=document.getElementsByClassName('task-delete');
-      var lengthOfArray=arrayOfElements.length;
+    function hide_all() {
+        var arrayOfElements = document.getElementsByClassName('task-delete');
+        var lengthOfArray = arrayOfElements.length;
 
-      for (var i=0; i<lengthOfArray;i++){
-          arrayOfElements[i].style.display='none';
-      }
+        for (var i = 0; i < lengthOfArray; i++) {
+            arrayOfElements[i].style.display = 'none';
+        }
 
-      document.getElementById('delete-button').onclick = show_all;
+        document.getElementById('delete-button').onclick = show_all;
     }
-  </script>
+
+    $(function () {
+        var lengthText = 10;
+        var text = $('#test').text();
+        var shortText = $.trim(text).substring(0, lengthText).split(" ").slice(0, -1).join(" ") + "...";
+
+        $('#test').prop("title", text);
+        $('#test').text(shortText);
+
+        $('[data-toggle="tooltip"]').tooltip();
+    })
+</script>
 {% endblock %}
