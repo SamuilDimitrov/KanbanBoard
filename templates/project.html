@@ -64,22 +64,22 @@
 
 <div class="row">
     <div class="col center">
-        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button"
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-outline-primary"
             data-toggle="modal" data-target="#myModal">Add Task</button>
     </div>
     <div class="col center">
-        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button"
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-outline-primary"
             data-toggle="modal" data-target="#Sprint">Create Sprint</button>
     </div>
     {% if current_user.id == project.admin_id %}
     <div class="col center">
         <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button
-                class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
+                class="btn btn-outline-primary">Add Colaborator</button></a>
     </div>
     {% endif %}
     <div class="col center">
         <button style="float: left; font-family: Verdana;" type="button" id="delete-button"
-            class="btn btn-danger btn-lg addtask-button" onclick="show_all();">Delete</button>
+            class="btn btn-outline-danger" onclick="show_all();">Delete</button>
     </div>
 </div>
 <div style="margin-left: 50px; margin-right: 50px;" class="row">
@@ -117,7 +117,7 @@
                         {% endif %}
                     </div>
                     <div class="col center">
-                        <a class="task-delete"
+                        <a style="color: red;" class="task-delete"
                             href="{{ url_for('add_task', task_id=curr_task['id'], project_id=project.id)}}">delete</a>
                     </div>
                     <div class="col center">
@@ -146,7 +146,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" style="float:left;">Add Task</h4>
-                <button type="button" class="close" data-dismiss="modal" style="float:right">&times;</button>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal" style="float:right">&times;</button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{{url_for('add_task', project_id=project.id)}}">
@@ -195,7 +195,7 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-outline-primary">Submit</button>
                 </form>
             </div>
         </div>
@@ -209,7 +209,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" style="float:left;">create Sprint</h4>
-                <button type="button" class="close" data-dismiss="modal" style="float:right">&times;</button>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal" style="float:right">&times;</button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{{url_for('create_sprint', project_id=project.id)}}">
@@ -223,7 +223,7 @@
                         <input class="form-control" type="date" id="sprint_completedate" name="sprint_completedate"
                             required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-outline-primary">Submit</button>
                 </form>
             </div>
         </div>
