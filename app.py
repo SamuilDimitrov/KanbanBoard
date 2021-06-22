@@ -294,13 +294,13 @@ def confirm_email(token):
         email = s.loads(token, salt='email-confirm', max_age=3600)
     except SignatureExpired:
         email = s.loads(token, salt='email-confirm')
-        user = User.query.filter_by(email=email).first() 
+        user = User.query.filter_by(email=email).first()
         db_session.delete(user)
         db_session.commit()
         flash('The confirmation link is invalid or has expired.', 'danger')
         return '<h1>The token is expired!</h1>'
 
-    user = User.query.filter_by(email=email).first() 
+    user = User.query.filter_by(email=email).first()
     if user.confirmed:
         flash('Account already confirmed. Please login.', 'success')
     else:
@@ -376,7 +376,7 @@ def show_project(project_id):
 
         all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
         result = tasks_schema.dump(all_tasks)
-        
+
         for i in all_tasks:
             connection = Connections_User_Task.query.filter_by(task_id=i.id).all()
             names = []
@@ -392,7 +392,7 @@ def show_project(project_id):
                 conUT[i.id] = False
             else:
                 conUT[i.id] = True
-        
+
         spirnts = Sprint.query.filter_by(project_id=project_id).all()
         for i in spirnts:
             is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
@@ -531,7 +531,16 @@ def add_task(project_id):
     completedate = datetime.strptime(request.form['completedate'], '%Y-%m-%d')
     taskstate = request.form['taskstate']
     importance = request.form['importance']
+    categories = request.form.getlist('category')
+    #print(categories)
+
     new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate, importance=importance)
+
+    for i in categories:
+        category = Categoryes(name=i)
+        connection_t_c = Connect_Categoryes(task_id=new_task.id, categoryes_id=category.id)
+        db_session.add(categories)
+        db_session.add(connection_t_c)
 
     db_session.add(new_task)
     db_session.commit()

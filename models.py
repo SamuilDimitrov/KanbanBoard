@@ -64,6 +64,7 @@ class Categoryes(Base):
     __tablename__ = 'categoryes'
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
+    
 
 class Connect_Categoryes(Base):
     __tablename__ = 'connectcategoryes'
