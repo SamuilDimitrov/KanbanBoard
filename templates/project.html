@@ -109,11 +109,25 @@
                             href="{{url_for('add_task_sprint', task_id=curr_task['id'], project_id=project.id)}}">Add to
                             sprint</a>
                     </div>
+                        
                     <div class="col center">
+                        {% if current_user.id == project.admin_id %}
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown Example
+                            <span class="caret"></span></button>
+                            <ul class="dropdown-menu">
+                                <input class="form-control" id="myInput" type="text" placeholder="Search..">
+                                {% for name in not_assigned[curr_task['id']] %}
+                                <li><a href="{{ url_for('assign_task', task_id=curr_task['id'], username = name)}}">{{name}}</a></li>
+                                {% endfor %}
+                            </ul>
+                          </div>
+                            
+                        {% endif %}
                         {% if conUT[curr_task['id']] %}
-                        <a class="assign" href="{{ url_for('assign_task', task_id=curr_task['id'])}}">assign</a>
+                            <a class="assign" href="{{ url_for('assign_task', task_id=curr_task['id'], username = current_user.username)}}">assign to me</a>
                         {% else %}
-                        <a class="unassign" href="{{ url_for('unassign_task', task_id=curr_task['id'])}}">unassign</a>
+                            <a class="unassign" href="{{ url_for('unassign_task', task_id=curr_task['id'])}}">unassign</a>
                         {% endif %}
                     </div>
                     <div class="col center">
@@ -261,5 +275,14 @@
 
         $('[data-toggle="tooltip"]').tooltip();
     })
+
+    $(document).ready(function(){
+        $("#myInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $(".dropdown-menu li").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
 </script>
 {% endblock %}

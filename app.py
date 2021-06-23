@@ -129,6 +129,40 @@ def check_invite(token):
     flash("You have been added as colaborator", "success")
     return redirect(url_for('index'))
 
+# @app.route('/_livesearch_in_project/<int:project_id>')
+# @login_required
+# @check_confirmed
+# def livesearch_in_project(project_id):
+#     text = request.args.get('text', type=str)
+
+#     search = f"%{text}%"
+#     print(search)
+#     users = User.query.filter(User.username.like(search)).all()
+
+#     result = []
+#     for user in users:
+#         if user.id != current_user.id:
+#             con = Connections_User_Project.query.filter_by(user_id=user.id, project_id=project_id).first()
+#             if con:
+#                 result.append(user)
+
+
+#     class JsonUser:
+#         def __init__(self, id, username, email, name):
+#             self.id = id
+#             self.name = name
+#             self.username = username
+#             self.email = email
+
+#         def to_json(self):
+#             return self.__dict__
+
+#     result = [JsonUser(r.id, r.username, r.email, r.name).to_json() for r in result]
+
+#     print(result)
+
+#     return jsonify(result)
+
 @app.route('/_livesearch')
 @login_required
 @check_confirmed
@@ -371,44 +405,63 @@ def show_project(project_id):
         return redirect(url_for('index'))
     else:
         assigned = {}
-        conUT ={}
+        not_assigned = {}
+        connectionUT = {}
         user_sprints = []
-
         all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
         result = tasks_schema.dump(all_tasks)
+        users_in_project = Connections_User_Project.query.filter_by(project_id=project_id).all()
+        users_id_in_project = []
+
+        for u in users_in_project:
+            users_id_in_project.append(u.user_id)
         
         for i in all_tasks:
             connection = Connections_User_Task.query.filter_by(task_id=i.id).all()
+            
             names = []
             user_id = []
+            other_names = []
+            non_assign_ids = users_id_in_project
+            
             for conn in connection:
                 user_id.append(conn.user_id)
+
             for u in user_id:
+                non_assign_ids.remove(u)
                 user = User.query.filter_by(id=u).first()
                 names.append(user.username)
+
+            for u_id in non_assign_ids:
+                if u_id != current_user.id:
+                    user = User.query.filter_by(id=u_id).first()
+                    other_names.append(user.username)
+            
             assigned[i.id] = names
+            not_assigned[i.id] = other_names
             c = Connections_User_Task.query.filter_by(task_id=i.id, user_id=current_user.id).first()
             if c:
-                conUT[i.id] = False
+                connectionUT[i.id] = False
             else:
-                conUT[i.id] = True
+                connectionUT[i.id] = True
         
         spirnts = Sprint.query.filter_by(project_id=project_id).all()
         for i in spirnts:
             is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
             if is_connect:
                 user_sprints.append(i)
-        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=conUT, assigned=assigned)
+        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=connectionUT, assigned=assigned, not_assigned=not_assigned)
 
-@app.route('/assign_task/<int:task_id>')
+@app.route('/assign_task/<int:task_id>/<username>')
 @login_required
 @check_confirmed
-def assign_task(task_id):
+def assign_task(task_id,username):
+    user = User.query.filter_by(username=username).first()
     task = Task.query.filter_by(id=task_id).first()
     project = Project.query.filter_by(id=task.project_id).first()
-    conUP = Connections_User_Project().query.filter_by(user_id=current_user.id,project_id=project.id).first()
+    conUP = Connections_User_Project().query.filter_by(user_id=user.id,project_id=project.id).first()
     if conUP:
-        conection = Connections_User_Task(task_id=task.id, user_id=current_user.id)
+        conection = Connections_User_Task(task_id=task.id, user_id=user.id)
         db_session.add(conection)
         db_session.commit()
         flash("Task assigned", "success")
