@@ -61,25 +61,41 @@
         {% endfor %}
     </div>
 </div>
+<div style="margin-left: 50px; margin-right: 100px; margin-top: 10px;" class="dropdown">
+    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+        Boards
+    </a>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        {% for board in boards %}
+        <a class="dropdown-item"
+            href="{{url_for('show_board',project_id=project.id,board_id=board.id)}}">{{board.name}}</a>
+        {% endfor %}
+    </div>
+</div>
 
 <div class="row">
     <div class="col center">
-        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button"
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-outline-primary"
             data-toggle="modal" data-target="#myModal">Add Task</button>
     </div>
     <div class="col center">
-        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-info btn-lg addtask-button"
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-outline-primary"
             data-toggle="modal" data-target="#Sprint">Create Sprint</button>
+    </div>
+    <div class="col center">
+        <button style="float: right; font-family: Verdana;" type="button" class="btn btn-outline-primary"
+            data-toggle="modal" data-target="#Board">Create Board</button>
     </div>
     {% if current_user.id == project.admin_id %}
     <div class="col center">
         <a href="{{url_for('search_for_colaborator',project_id=project.id)}}"><button
-                class="btn btn-info btn-lg addtask-button">Add Colaborator</button></a>
+                class="btn btn-outline-primary">Add Colaborator</button></a>
     </div>
     {% endif %}
     <div class="col center">
         <button style="float: left; font-family: Verdana;" type="button" id="delete-button"
-            class="btn btn-danger btn-lg addtask-button" onclick="show_all();">Delete</button>
+            class="btn btn-outline-danger" onclick="show_all();">Delete</button>
     </div>
 </div>
 <div style="margin-left: 50px; margin-right: 50px;" class="row">
@@ -131,7 +147,7 @@
                         {% endif %}
                     </div>
                     <div class="col center">
-                        <a class="task-delete"
+                        <a style="color: red;" class="task-delete"
                             href="{{ url_for('add_task', task_id=curr_task['id'], project_id=project.id)}}">delete</a>
                     </div>
                     <div class="col center">
@@ -160,7 +176,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" style="float:left;">Add Task</h4>
-                <button type="button" class="close" data-dismiss="modal" style="float:right">&times;</button>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal" style="float:right">&times;</button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{{url_for('add_task', project_id=project.id)}}">
@@ -200,14 +216,16 @@
                     <div class="form-group">
                         <label for="category">Category</label>
                         <select multiple class="form-control" id="category" name="category" required>
-                            <option value="Add feature">Add feature</option>
-                            <option value="Bug fix">Bug fix</option>
-                            <option value="Speed improvement">Speed improvement</option>
-                            <option value="Tests">Tests</option>
+                            <option value="Java">Java</option>
+                            <option value="C++">C++</option>
+                            <option value="C#">C#</option>
+                            <option value="Python">Python</option>
+                            <option value="Javascript">Javascript</option>
+                            <option value="C">C</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-outline-primary">Submit</button>
                 </form>
             </div>
         </div>
@@ -221,7 +239,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" style="float:left;">create Sprint</h4>
-                <button type="button" class="close" data-dismiss="modal" style="float:right">&times;</button>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal" style="float:right">&times;</button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{{url_for('create_sprint', project_id=project.id)}}">
@@ -235,10 +253,43 @@
                         <input class="form-control" type="date" id="sprint_completedate" name="sprint_completedate"
                             required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-outline-primary">Submit</button>
                 </form>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="Board" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-body">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="float:left;">create Board</h4>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal" style="float:right">&times;</button>
+            </div>
+          <form method="post" action="{{url_for('create_board', project_id=project.id)}}">
+              <div class="form-group">
+                  <label for="board_name">Board Name</label>
+                  <input type="text" class="form-control" id="board_name" name="board_name"
+                      placeholder="Board name" required>
+              </div>
+              <div class="form-group">
+                  <label for="category">Categories</label>
+                  <select multiple class="form-control" id="category" name="category" required>
+                      <option value="Java">Java</option>
+                      <option value="C++">C++</option>
+                      <option value="C#">C#</option>
+                      <option value="Python">Python</option>
+                      <option value="Javascript">Javascript</option>
+                      <option value="C">C</option>
+                      <option value="Other">Other</option>
+                  </select>
+                  <button type="submit" class="btn btn-outline-primary">Submit</button>
+              </div>
+          </form>
+        </div>
+      </div>
     </div>
 </div>
 

@@ -51,9 +51,6 @@
 {% block body %}
 <div class="row">
     <div class="col center">
-        <a href="{{url_for('sprint_serach_coll',sprint_id=sprint.id)}}"><button style="margin: 20px;" class="btn btn-outline-primary">Add Colaborator</button></a>
-    </div>
-    <div class="col center">
         <button style="float: font-family Verdana; margin: 20px;" type="button" id="delete-button" class="btn btn-outline-danger"
             onclick="show_all();">Delete</button>
     </div>
@@ -85,7 +82,7 @@
                         <a style="color: red;" class="task-delete" href="{{ url_for('delete_task', task_id=todo['id'], project_id=project.id)}}">delete</a>
                     </div>
                     <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=todo['id'], state='PROGRESS', project_id=project.id, sprint_id=sprint.id, board_id = 0) }}">&#8594;</a>
+                        <a href="{{ url_for('move_task', task_id=todo['id'], state='PROGRESS', project_id=project.id, sprint_id=0, board_id = board.id) }}">&#8594;</a>
                     </div>
                 </div>
             </li>
@@ -115,13 +112,13 @@
                 </div>
                 <div class="row">
                     <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=progress['id'], state='TO DO', project_id=project.id, sprint_id=sprint.id, board_id = 0)}}">&#8592;</a>
+                        <a href="{{ url_for('move_task', task_id=progress['id'], state='TO DO', project_id=project.id, sprint_id=0, board_id = board.id)}}">&#8592;</a>
                     </div>
                     <div class="col center">
                         <a style="color: red;" class="task-delete" href="{{ url_for('delete_task', task_id=progress['id'], project_id=project.id)}}" >delete</a>
                     </div>
                     <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=progress['id'], state='TESTING', project_id=project.id, sprint_id=sprint.id, board_id = 0) }}">&#8594;</a>
+                        <a href="{{ url_for('move_task', task_id=progress['id'], state='TESTING', project_id=project.id, sprint_id=0, board_id = board.id) }}">&#8594;</a>
                     </div>
                 </div>
             </li>
@@ -152,13 +149,13 @@
                 </div>
                 <div class="row">
                     <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=testing['id'], state='PROGRESS', project_id=project.id, sprint_id=sprint.id, board_id = 0) }}">&#8592;</a>
+                        <a href="{{ url_for('move_task', task_id=testing['id'], state='PROGRESS', project_id=project.id, sprint_id=0, board_id = board.id) }}">&#8592;</a>
                     </div>
                     <div class="col center">
                         <a style="color: red;" class="task-delete" href="{{ url_for('delete_task', task_id=testing['id'], project_id=project.id)}}">delete</a>
                     </div>
                     <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=testing['id'], state='DONE', project_id=project.id, sprint_id=sprint.id, board_id = 0) }}">&#8594;</a>
+                        <a href="{{ url_for('move_task', task_id=testing['id'], state='DONE', project_id=project.id, sprint_id=0, board_id = board.id) }}">&#8594;</a>
                     </div>
                 </div>
             </li>
@@ -189,7 +186,7 @@
                 </div>
                 <div class="row">
                     <div class="col center">
-                        <a href="{{ url_for('move_task', task_id=done['id'], state='TESTING' ,project_id=project.id, sprint_id=sprint.id, board_id = 0) }}">&#8592;</a>
+                        <a href="{{ url_for('move_task', task_id=done['id'], state='TESTING' ,project_id=project.id, sprint_id=0, board_id = board.id) }}">&#8592;</a>
                     </div>
                     <div class="col center">
                         <a style="color: red;" class="task-delete" href="{{ url_for('delete_task', task_id=done['id'], project_id=project.id)}}">delete</a>

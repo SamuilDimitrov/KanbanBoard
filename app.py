@@ -18,7 +18,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from decorators import check_confirmed
 from database import db_session, init_db
 from models import User, Project, Task, Categoryes, Board, Sprint
-from models import Connect_Categoryes, Connections_User_Project, Connections_User_Task, Connections_Sprint_User, Connections_Task_Sprint
+from models import Connect_Categoryes, Connections_User_Project, Connections_User_Task, Connections_Sprint_User, Connections_Task_Sprint, Connections_Board_Categoryes
 
 login_manager = LoginManager()
 
@@ -31,6 +31,57 @@ mail = Mail(app)
 s = URLSafeTimedSerializer('Thisisasecret!')
 
 init_db()
+
+
+with app.app_context():
+    print("HERE")
+
+    category1 = Categoryes(name="JAVA")
+    category2 = Categoryes(name="C++")
+    category3 = Categoryes(name="C#")
+    category4 = Categoryes(name="Python")
+    category5 = Categoryes(name="Javascript")
+    category6 = Categoryes(name="C")
+    category7 = Categoryes(name="Other")
+    category1_check = Categoryes.query.filter_by(name="JAVA").first()
+    if not category1_check:
+        db_session.add(category1)
+        db_session.commit()
+
+    category2_check = Categoryes.query.filter_by(name="C++").first()
+    if not category2_check:
+        db_session.add(category2)
+        db_session.commit()
+
+    category3_check = Categoryes.query.filter_by(name="C#").first()
+    if not category3_check:
+        db_session.add(category3)
+        db_session.commit()
+
+    category4_check = Categoryes.query.filter_by(name="Python").first()
+    if not category4_check:
+        db_session.add(category4)
+        db_session.commit()
+
+    category5_check = Categoryes.query.filter_by(name="Javascript").first()
+    if not category5_check:
+        db_session.add(category5)
+        db_session.commit()
+
+    category6_check = Categoryes.query.filter_by(name="C").first()
+    if not category6_check:
+        db_session.add(category6)
+        db_session.commit()
+
+    category7_check = Categoryes.query.filter_by(name="Other").first()
+    if not category7_check:
+        db_session.add(category7)
+        db_session.commit()
+
+
+
+
+
 
 ma = Marshmallow(app)
 login_manager.init_app(app)
@@ -328,13 +379,13 @@ def confirm_email(token):
         email = s.loads(token, salt='email-confirm', max_age=3600)
     except SignatureExpired:
         email = s.loads(token, salt='email-confirm')
-        user = User.query.filter_by(email=email).first() 
+        user = User.query.filter_by(email=email).first()
         db_session.delete(user)
         db_session.commit()
         flash('The confirmation link is invalid or has expired.', 'danger')
         return '<h1>The token is expired!</h1>'
 
-    user = User.query.filter_by(email=email).first() 
+    user = User.query.filter_by(email=email).first()
     if user.confirmed:
         flash('Account already confirmed. Please login.', 'success')
     else:
@@ -444,8 +495,9 @@ def show_project(project_id):
                 connectionUT[i.id] = False
             else:
                 connectionUT[i.id] = True
-        
+
         spirnts = Sprint.query.filter_by(project_id=project_id).all()
+        boards = Board.query.filter_by(project_id=project_id).all()
         for i in spirnts:
             is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
             if is_connect:
@@ -550,6 +602,89 @@ def create_sprint(project_id):
             flash("Non such project","danger")
             return redirect(url_for('index'))
 
+@app.route('/create_board/<int:project_id>', methods=['GET', 'POST'])
+@login_required
+@check_confirmed
+def create_board(project_id):
+    if request.method == "POST":
+        project = Project.query.filter_by(id=project_id).first()
+        if project:
+            board_name = request.form["board_name"]
+            categories = request.form.getlist("category")
+            board = Board(name=board_name,project_id=project_id,user_id=current_user.id)
+            db_session.add(board)
+            db_session.commit()
+
+            curr_board = Board.query.filter_by(name=board_name,project_id=project_id,user_id=current_user.id).first()
+
+            for i in categories:
+                curr_cat = Categoryes.query.filter_by(name=i).first()
+
+                if curr_cat:
+                    connection = Connections_Board_Categoryes(board_id=curr_board.id, categoryes_id=curr_cat.id)
+                    db_session.add(connection)
+                    db_session.commit()
+
+            tasks = Task.query.filter_by()
+            flash("Board created successfully!","success")
+            return redirect(url_for('show_project', project_id=project_id))
+        else:
+            flash("Non such project","danger")
+            return redirect(url_for('index'))
+
+@app.route('/board_project/<int:project_id>/<int:board_id>')
+@login_required
+@check_confirmed
+def show_board(project_id,board_id):
+    board = Board.query.filter_by(id=board_id).first()
+    project = Project.query.filter_by(id=project_id).first()
+    con = Connections_User_Project.query.filter_by(project_id=project.id, user_id=current_user.id).first()
+
+    if con is None:
+        flash("You are not colaborator", "danger")
+        return redirect(url_for('index'))
+    if board.project_id != project_id:
+        flash("No such board", "danger")
+        return redirect(url_for('index'))
+    else:
+        conBC = Connections_Board_Categoryes.query.filter_by(board_id=board_id).all()
+        all_tasks_con = Connect_Categoryes.query.filter_by(categoryes_id=conBC[0].categoryes_id).all()
+        for i in conBC:
+            for connection in all_tasks_con:
+                con = Connect_Categoryes.query.filter_by(task_id=connection.task_id,categoryes_id=i.categoryes_id).all()
+                if not con:
+                    all_tasks_con.remove(con)
+
+        #all_tasks_con = Connections_Task_Sprint.query.filter_by(sprint_id=sprint_id).all()
+        all_tasks = []
+        for t in all_tasks_con:
+            task = Task.query.filter_by(id=t.task_id).first()
+            print("task = ")
+            print(task)
+            all_tasks.append(task)
+        result = tasks_schema.dump(all_tasks)
+
+        to_do = []
+        progress = []
+        testing = []
+        done = []
+        for i in result:
+            if datetime.strptime(i['completedate'][:10], '%Y-%m-%d') > datetime.today():
+                i['overdue'] = False
+            else:
+                i['overdue'] = True
+            if i['state'] == 'TO DO':
+                to_do.append(i)
+            elif i['state'] == 'PROGRESS':
+                progress.append(i)
+            elif i['state'] == 'TESTING':
+                testing.append(i)
+            else:
+                done.append(i)
+
+        return render_template("board.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, board=board)
+
+
 @app.route('/add_task_sprint/<task_id>/<project_id>', methods=['GET', 'POST'])
 @login_required
 @check_confirmed
@@ -584,23 +719,33 @@ def add_task(project_id):
     completedate = datetime.strptime(request.form['completedate'], '%Y-%m-%d')
     taskstate = request.form['taskstate']
     importance = request.form['importance']
-    new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate, importance=importance)
+    categories = request.form.getlist('category')
+    print(categories)
 
+    new_task = Task(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate, importance=importance)
     db_session.add(new_task)
     db_session.commit()
 
+    curr_task = Task.query.filter_by(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate, importance=importance).first()
+    for i in categories:
+        category = Categoryes.query.filter_by(name=i).first()
+        connection_t_c = Connect_Categoryes(task_id=curr_task.id, categoryes_id=category.id)
+        db_session.add(connection_t_c)
+        db_session.commit()
+
+
     return redirect(url_for('show_project', project_id=project_id))
 
-@app.route('/move_task/<task_id>/<state>/<project_id>/<int:sprint_id>', methods=['GET'])
+@app.route('/move_task/<task_id>/<state>/<project_id>/<int:sprint_id>/<int:board_id>', methods=['GET'])
 @login_required
 @check_confirmed
-def move_task(task_id, state, project_id, sprint_id):
+def move_task(task_id, state, project_id, sprint_id, board_id):
     task = Task.query.get(task_id)
     task.state = state
 
     db_session.commit()
     if sprint_id == 0:
-        print("TO-DO -----------------------------------------------------")
+        return redirect(url_for('show_board', project_id=project_id,board_id=board_id))
     else:
         return redirect(url_for('show_sprint', project_id=project_id,sprint_id=sprint_id))
 
