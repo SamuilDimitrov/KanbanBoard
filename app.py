@@ -463,18 +463,19 @@ def show_project(project_id):
         result = tasks_schema.dump(all_tasks)
         users_in_project = Connections_User_Project.query.filter_by(project_id=project_id).all()
         users_id_in_project = []
+        user_boards = []
 
         for u in users_in_project:
             users_id_in_project.append(u.user_id)
-        
+
         for i in all_tasks:
             connection = Connections_User_Task.query.filter_by(task_id=i.id).all()
-            
+
             names = []
             user_id = []
             other_names = []
             non_assign_ids = users_id_in_project
-            
+
             for conn in connection:
                 user_id.append(conn.user_id)
 
@@ -487,7 +488,7 @@ def show_project(project_id):
                 if u_id != current_user.id:
                     user = User.query.filter_by(id=u_id).first()
                     other_names.append(user.username)
-            
+
             assigned[i.id] = names
             not_assigned[i.id] = other_names
             c = Connections_User_Task.query.filter_by(task_id=i.id, user_id=current_user.id).first()
@@ -502,7 +503,13 @@ def show_project(project_id):
             is_connect = Connections_Sprint_User.query.filter_by(sprint_id=i.id, user_id=current_user.id).first()
             if is_connect:
                 user_sprints.append(i)
-        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=connectionUT, assigned=assigned, not_assigned=not_assigned)
+
+        for i in boards:
+            user_boards.append(i)
+
+
+
+        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=connectionUT, assigned=assigned, not_assigned=not_assigned, boards=user_boards)
 
 @app.route('/assign_task/<int:task_id>/<username>')
 @login_required
@@ -651,11 +658,10 @@ def show_board(project_id,board_id):
         all_tasks_con = Connect_Categoryes.query.filter_by(categoryes_id=conBC[0].categoryes_id).all()
         for i in conBC:
             for connection in all_tasks_con:
-                con = Connect_Categoryes.query.filter_by(task_id=connection.task_id,categoryes_id=i.categoryes_id).all()
-                if not con:
-                    all_tasks_con.remove(con)
+                con = Connect_Categoryes.query.filter_by(task_id=connection.task_id,categoryes_id=i.categoryes_id).first()
 
         #all_tasks_con = Connections_Task_Sprint.query.filter_by(sprint_id=sprint_id).all()
+
         all_tasks = []
         for t in all_tasks_con:
             task = Task.query.filter_by(id=t.task_id).first()
