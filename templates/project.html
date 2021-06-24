@@ -107,6 +107,7 @@
         <ul class="list-group list-group-flush">
             {% for curr_task in result %}
             <li class="list-group-item">
+
                 <div class="row">
                     <div class="col">
                         <span style="float:left">{{curr_task['taskname']}}</span>
@@ -125,7 +126,11 @@
                             href="{{url_for('add_task_sprint', task_id=curr_task['id'], project_id=project.id)}}">Add to
                             sprint</a>
                     </div>
-                        
+                    <div class="col center">
+                      {% for name in task_catt[curr_task['id']] %}
+                      {{name}}
+                      {% endfor %}
+                    </div>
                     <div class="col center">
                         {% if current_user.id == project.admin_id %}
                         <div class="dropdown">
@@ -138,7 +143,6 @@
                                 {% endfor %}
                             </ul>
                           </div>
-                            
                         {% endif %}
                         {% if conUT[curr_task['id']] %}
                             <a class="assign" href="{{ url_for('assign_task', task_id=curr_task['id'], username = current_user.username)}}">assign to me</a>

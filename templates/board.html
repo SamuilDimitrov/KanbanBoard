@@ -49,6 +49,15 @@
 {% endblock %}
 
 {% block body %}
+
+<h1 style="margin-left: 635px; font-style: italic;" >{{board.name}}</h1>
+
+{% for curr in categories %}
+<div style="width: 8%; margin-left: 630px; border-left: 5px solid #00bfff; background-color: #e6f9ff; text-align: center;">
+      {{curr.name}}
+</div>
+{% endfor %}
+
 <div class="row">
     <div class="col center">
         <button style="float: font-family Verdana; margin: 20px;" type="button" id="delete-button" class="btn btn-outline-danger"

@@ -36,14 +36,15 @@ init_db()
 with app.app_context():
     print("HERE")
 
-    category1 = Categoryes(name="JAVA")
+    category1 = Categoryes(name="Java")
     category2 = Categoryes(name="C++")
     category3 = Categoryes(name="C#")
     category4 = Categoryes(name="Python")
     category5 = Categoryes(name="Javascript")
     category6 = Categoryes(name="C")
     category7 = Categoryes(name="Other")
-    category1_check = Categoryes.query.filter_by(name="JAVA").first()
+
+    category1_check = Categoryes.query.filter_by(name="Java").first()
     if not category1_check:
         db_session.add(category1)
         db_session.commit()
@@ -458,6 +459,7 @@ def show_project(project_id):
         assigned = {}
         not_assigned = {}
         connectionUT = {}
+        task_catt = {}
         user_sprints = []
         all_tasks = Task.query.filter_by(project_id=project_id).order_by(Task.importance).all()
         result = tasks_schema.dump(all_tasks)
@@ -470,11 +472,16 @@ def show_project(project_id):
 
         for i in all_tasks:
             connection = Connections_User_Task.query.filter_by(task_id=i.id).all()
-
+            categories_task = Connect_Categoryes.query.filter_by(task_id=i.id).all()
+            categories = []
             names = []
             user_id = []
             other_names = []
             non_assign_ids = users_id_in_project
+
+            for c in categories_task:
+                cat = Categoryes.query.filter_by(id=c.categoryes_id).first()
+                categories.append(cat.name)
 
             for conn in connection:
                 user_id.append(conn.user_id)
@@ -489,6 +496,7 @@ def show_project(project_id):
                     user = User.query.filter_by(id=u_id).first()
                     other_names.append(user.username)
 
+            task_catt[i.id] = categories
             assigned[i.id] = names
             not_assigned[i.id] = other_names
             c = Connections_User_Task.query.filter_by(task_id=i.id, user_id=current_user.id).first()
@@ -509,7 +517,7 @@ def show_project(project_id):
 
 
 
-        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=connectionUT, assigned=assigned, not_assigned=not_assigned, boards=user_boards)
+        return render_template("project.html",result=result, project=project, spirnts=user_sprints, conUT=connectionUT, assigned=assigned, not_assigned=not_assigned, boards=user_boards, task_catt=task_catt)
 
 @app.route('/assign_task/<int:task_id>/<username>')
 @login_required
@@ -656,7 +664,11 @@ def show_board(project_id,board_id):
     else:
         conBC = Connections_Board_Categoryes.query.filter_by(board_id=board_id).all()
         all_tasks_con = Connect_Categoryes.query.filter_by(categoryes_id=conBC[0].categoryes_id).all()
+        categories = []
+
         for i in conBC:
+            curr = Categoryes.query.filter_by(id=i.categoryes_id).first()
+            categories.append(curr)
             for connection in all_tasks_con:
                 con = Connect_Categoryes.query.filter_by(task_id=connection.task_id,categoryes_id=i.categoryes_id).first()
 
@@ -688,7 +700,7 @@ def show_board(project_id,board_id):
             else:
                 done.append(i)
 
-        return render_template("board.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, board=board)
+        return render_template("board.html",update_todo = to_do, update_progress = progress, update_testing = testing, update_done = done, project=project, board=board, categories=categories)
 
 
 @app.route('/add_task_sprint/<task_id>/<project_id>', methods=['GET', 'POST'])
@@ -735,10 +747,15 @@ def add_task(project_id):
     curr_task = Task.query.filter_by(project_id=project_id, taskname=taskname, description=description, completedate=completedate, state=taskstate, importance=importance).first()
     for i in categories:
         category = Categoryes.query.filter_by(name=i).first()
-        connection_t_c = Connect_Categoryes(task_id=curr_task.id, categoryes_id=category.id)
-        db_session.add(connection_t_c)
-        db_session.commit()
-
+        if category:
+            connection_t_c = Connect_Categoryes(task_id=curr_task.id, categoryes_id=category.id)
+            db_session.add(connection_t_c)
+            db_session.commit()
+            flash("Task created", "success")
+        else:
+            db_session.delete(curr_task)
+            db_session.commit()
+            flash("Task not created", "danger")
 
     return redirect(url_for('show_project', project_id=project_id))
 
@@ -760,6 +777,18 @@ def move_task(task_id, state, project_id, sprint_id, board_id):
 @check_confirmed
 def delete_task(task_id, project_id):
     task = Task.query.get(task_id)
+    conTCat = Connect_Categoryes.query.filter_by(task_id=task.id).all()
+    for i in conTCat:
+        db_session.delete(i)
+
+    conTU = Connections_User_Task.query.filter_by(task_id=task.id).all()
+    for i in conTU:
+        db_session.delete(i)
+
+    conTS = Connections_Task_Sprint.query.filter_by(task_id=task.id).all()
+    for i in conTS:
+        db_session.delete(i)
+     
     db_session.delete(task)
     db_session.commit()
 
